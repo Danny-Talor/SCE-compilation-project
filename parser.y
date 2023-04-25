@@ -27,21 +27,21 @@
 
 %token <string> COMMENT WHILE IF ELSE FOR 
 %token <string> RETURN
-%token <string> BOOL_TYPE STRING_TYPE CHARPTR_TYPE CHAR_TYPE INT INTPTR_TYPE PROCEDUR
-%token <string> AND ADDRESS EQL ASSINGMENT OR LENGTH GREATEREQL GREATER LESSEQL LESS NOTEQL NOT
-%token <string> DIVISION PLUS MINUS MULTI VARIABLE
-%token <string> STRING_LTL REAL_LTL CHAR_LTL NULLL
-%token <string> MAIN IDENTIFIER SEMICOLON COMMA OPENPAREN CLOSEPAREN OPENBRACKET CLOSEBRACKET OPENBRACE CLOSEBRACE
-%token <string> DECIMAL_LTL HEX_LTL BOOLTRUE BOOLFALSE  REAL REALPTR FUNCTION COLON  DEREFRENCE 
+%token <string> BOOL_TYPE STRING_TYPE CHARPTR_TYPE CHAR_TYPE INT_TYPE INTPTR_TYPE PROCEDURE
+%token <string> AND ADDRESS EQ ASSIGN OR LENGTH GREATEREQ GREATER LESSEQ LESS NOTEQ NOT
+%token <string> DIV ADD SUB MUL VAR
+%token <string> STRING REAL CHAR NULL_T
+%token <string> MAIN IDENTIFIER SEMICOLON COMMA OPAREN CPAREN OBRACK CBRACK OBRACE CBRACE
+%token <string> DECIMAL HEX BOOLTRUE BOOLFALSE  REAL_TYPE REALPTR_TYPE FUNCTION COLON DEREFRENCE 
 
-%left PLUS MINUS RETURN
-%left MULTI DIVISION
-%left EQL NOTEQL LESS LESSEQL GREATEREQL GREATER OR AND
+%left ADD SUB RETURN
+%left MUL DIV
+%left EQ NOTEQ LESS LESSEQ GREATEREQ GREATER OR AND
 %left SEMICOLON 
-%right NOT CLOSEBRACE
+%right NOT CBRACE
 
 %nonassoc IDENTIFIER 
-%nonassoc OPENPAREN
+%nonassoc OPAREN
 %nonassoc IF
 %nonassoc ELSE 
 
@@ -61,7 +61,7 @@ program: procedures main {$$=mknode("CODE",$1,$2);}
 cmmnt: COMMENT cmmnt| ;
 
  //this is the main
-main: PROCEDUR MAIN OPENPAREN CLOSEPAREN OPENBRACE pro_body CLOSEBRACE
+main: PROCEDURE MAIN OPAREN CPAREN OBRACE pro_body CBRACE
 {
 $$=mknode("proc",
 mknode("Main",mknode("\n",NULL,NULL),NULL),
@@ -73,11 +73,11 @@ procedures: procedures  procedure {$$=mknode("",$1,$2);}
 	| {$$=NULL;};
 
 //function
-procedure: FUNCTION IDENTIFIER OPENPAREN para_pro CLOSEPAREN cmmnt RETURN type_pro  OPENBRACE  pro_body RET CLOSEBRACE
+procedure: FUNCTION IDENTIFIER OPAREN para_pro CPAREN cmmnt RETURN type_pro  OBRACE  pro_body RET CBRACE
 { 
 		$$=mknode("func",mknode($2,mknode("\n",NULL,NULL),mknode("ARGS",$4,mknode("return",$8,NULL))),mknode("",$10,$11));	
 }
-| PROCEDUR IDENTIFIER OPENPAREN para_pro CLOSEPAREN  OPENBRACE  pro_body CLOSEBRACE
+| PROCEDURE IDENTIFIER OPAREN para_pro CPAREN  OBRACE  pro_body CBRACE
 {
 	$$=mknode("proc",mknode($2,mknode("\n",NULL,NULL),NULL),mknode("ARGS",$4,$7));
 };
@@ -104,7 +104,7 @@ pro_body: cmmnt  procedures declears stmnts
 declears: declears declear  {$$=mknode("",$1,$2);} | {$$=NULL;}  ;
 
 //declaration of varibals/ 
-declear: VARIABLE var_id COLON type_id cmmnt SEMICOLON cmmnt
+declear: VAR var_id COLON type_id cmmnt SEMICOLON cmmnt
 {
 	$$=mknode("var", $4,$2);
 };
@@ -116,13 +116,13 @@ var_id: IDENTIFIER COMMA var_id {$$=mknode($1, mknode(" ", $3, NULL),NULL);}
 
 //types without string/
 type_id: BOOL_TYPE {$$=mknode("boolean", NULL, NULL);}
-	| STRING_TYPE OPENBRACKET DECIMAL_LTL CLOSEBRACKET {$$=mknode("string", NULL, NULL);}
+	| STRING_TYPE OBRACK DECIMAL CBRACK {$$=mknode("string", NULL, NULL);}
 	| CHAR_TYPE {$$=mknode("char", NULL, NULL);}
-	| INT {$$=mknode("int", NULL, NULL);}
-	| REAL {$$=mknode("real", NULL, NULL);}
+	| INT_TYPE {$$=mknode("int", NULL, NULL);}
+	| REAL_TYPE {$$=mknode("real", NULL, NULL);}
 	| INTPTR_TYPE {$$=mknode("int*", NULL, NULL);}
 	| CHARPTR_TYPE {$$=mknode("char*", NULL, NULL);}
-	| REALPTR {$$=mknode("real*", NULL, NULL);};
+	| REALPTR_TYPE {$$=mknode("real*", NULL, NULL);};
 
 
 
@@ -130,11 +130,11 @@ type_id: BOOL_TYPE {$$=mknode("boolean", NULL, NULL);}
 type_pro: BOOL_TYPE {$$=mknode("boolean", NULL, NULL);}
  	| STRING_TYPE {$$=mknode("string", NULL, NULL);}
 	| CHAR_TYPE {$$=mknode("char", NULL, NULL);}
-	| INT {$$=mknode("int", NULL, NULL);}
-	| REAL {$$=mknode("real", NULL, NULL);}
+	| INT_TYPE {$$=mknode("int", NULL, NULL);}
+	| REAL_TYPE {$$=mknode("real", NULL, NULL);}
 	| INTPTR_TYPE {$$=mknode("int*", NULL, NULL);}
 	| CHARPTR_TYPE {$$=mknode("char*", NULL, NULL);}
-	| REALPTR {$$=mknode("real*", NULL, NULL);};
+	| REALPTR_TYPE {$$=mknode("real*", NULL, NULL);};
 	
 
 //Statments
@@ -144,7 +144,7 @@ stmnts: stmnts stmnt {$$=mknode("",$1,$2);} | {$$=NULL;};
 stmnt_block: stmnt {$$=$1;}|RETURN expr SEMICOLON {$$=mknode("return",$2,NULL);};
 
 //new block in stmnts
-new_block: OPENBRACE cmmnt declears stmnts RET CLOSEBRACE cmmnt
+new_block: OBRACE cmmnt declears stmnts RET CBRACE cmmnt
 {
 	$$=mknode("{",$3,mknode("", $4, mknode("",$5,mknode("}",NULL,NULL))));
 };
@@ -153,13 +153,13 @@ new_block: OPENBRACE cmmnt declears stmnts RET CLOSEBRACE cmmnt
 RET: RETURN expr SEMICOLON cmmnt {$$=mknode("return",$2,NULL);}| {$$=NULL;};
 
 //Statment
-stmnt: IF OPENPAREN expr CLOSEPAREN  stmnt_block 
+stmnt: IF OPAREN expr CPAREN  stmnt_block 
 {
 	$$=mknode("if",
 	mknode("(", $3, 
 	mknode(")",NULL,NULL)),$5);
 }%prec IF
-| IF OPENPAREN expr CLOSEPAREN   stmnt_block    ELSE  stmnt_block  
+| IF OPAREN expr CPAREN   stmnt_block    ELSE  stmnt_block  
 {
 	$$=mknode("if-else",
 	mknode("(", $3, 
@@ -167,13 +167,13 @@ stmnt: IF OPENPAREN expr CLOSEPAREN  stmnt_block
 	mknode("",$5,
 	mknode("",$7,NULL)));
 }
-| WHILE cmmnt OPENPAREN expr CLOSEPAREN  stmnt_block  
+| WHILE cmmnt OPAREN expr CPAREN  stmnt_block  
 {
 	$$=mknode("while",
 	mknode("(", $4, 
 	mknode(")",NULL,NULL)),$6);
 }
-| FOR cmmnt OPENPAREN assmnt_stmnt SEMICOLON expr SEMICOLON assmnt_stmnt CLOSEPAREN stmnt_block 
+| FOR cmmnt OPAREN assmnt_stmnt SEMICOLON expr SEMICOLON assmnt_stmnt CPAREN stmnt_block 
 {
 		$$= mknode("for",
 			mknode("(",
@@ -196,7 +196,7 @@ assmnt_stmnt: lhs ASSINGMENT expr
 
 
 //lefd hand side id
-lhs: IDENTIFIER OPENBRACKET expr CLOSEBRACKET 
+lhs: IDENTIFIER OBRACK expr CBRACK 
 {
 	$$=mknode($1, mknode("[",$3,mknode("]",NULL,NULL)), NULL);
 } 
@@ -206,31 +206,31 @@ lhs: IDENTIFIER OPENBRACKET expr CLOSEBRACKET
 
 	
 //Expresion
-expr:  OPENPAREN expr CLOSEPAREN {$$=mknode("(",$2,mknode(")",NULL,NULL));}|
+expr:  OPAREN expr CPAREN {$$=mknode("(",$2,mknode(")",NULL,NULL));}|
 //bool oper
-    expr EQL expr {$$=mknode("==",$1,$3);}
-	| expr NOTEQL expr {$$=mknode("!=",$1,$3);}
-	| expr GREATEREQL expr {$$=mknode(">=",$1,$3);}
+    expr EQ expr {$$=mknode("==",$1,$3);}
+	| expr NOTEQ expr {$$=mknode("!=",$1,$3);}
+	| expr GREATEREQ expr {$$=mknode(">=",$1,$3);}
 	| expr GREATER expr {$$=mknode(">",$1,$3);}
-	| expr LESSEQL expr {$$=mknode("<=",$1,$3);}
+	| expr LESSEQ expr {$$=mknode("<=",$1,$3);}
 	| expr LESS expr {$$=mknode("<",$1,$3);}
 	| expr AND expr {$$=mknode("&&",$1,$3);}
 	| expr OR expr {$$=mknode("||",$1,$3);}
 //aritmetical operator
-	| expr PLUS expr {$$=mknode("+",$1,$3);}
-	| expr MINUS expr {$$=mknode("-",$1,$3);}
-	| expr MULTI expr {$$=mknode("*",$1,$3);}
-	| expr DIVISION expr {$$=mknode("/",$1,$3);}
+	| expr ADD expr {$$=mknode("+",$1,$3);}
+	| expr SUB expr {$$=mknode("-",$1,$3);}
+	| expr MUL expr {$$=mknode("*",$1,$3);}
+	| expr DIV expr {$$=mknode("/",$1,$3);}
 //not operator
 	| NOT expr {$$=mknode("!",$2,NULL);}
 	| address_exprs {$$=$1;}
 	| derefrence_expr {$$=$1;}
 	| call_func cmmnt {$$=$1;}
-	| DECIMAL_LTL {$$=mknode($1,NULL,NULL);}
-	| HEX_LTL {$$=mknode($1,NULL,NULL);}
-	| CHAR_LTL {$$=mknode($1,NULL,NULL);}
-	| REAL_LTL {$$=mknode($1,NULL,NULL);}
-	| STRING_LTL {$$=mknode($1,NULL,NULL);}
+	| DECIMAL {$$=mknode($1,NULL,NULL);}
+	| HEX {$$=mknode($1,NULL,NULL);}
+	| CHAR {$$=mknode($1,NULL,NULL);}
+	| REAL {$$=mknode($1,NULL,NULL);}
+	| STRING {$$=mknode($1,NULL,NULL);}
 	| BOOLFALSE {$$=mknode($1,NULL,NULL);}
 	| BOOLTRUE {$$=mknode($1,NULL,NULL);}
 	| LENGTH IDENTIFIER LENGTH 
@@ -239,20 +239,20 @@ expr:  OPENPAREN expr CLOSEPAREN {$$=mknode("(",$2,mknode(")",NULL,NULL));}|
 		mknode($2,NULL,NULL),
 		mknode("|",NULL,NULL));
 	}
-	| IDENTIFIER OPENBRACKET expr CLOSEBRACKET 
+	| IDENTIFIER OBRACK expr CBRACK 
 	{$$=mknode($1,mknode("[",$3,mknode("]",NULL,NULL)),NULL);}
 	| IDENTIFIER {$$=mknode($1,NULL,NULL);}
-	| NULLL {$$=mknode("null",NULL,NULL);};
+	| NULL_T {$$=mknode("null",NULL,NULL);};
 
 //address expression like &id
 
 address_exprs:ADDRESS address_exprs {$$=mknode($1,$2,NULL);} | address_expr {$$=$1;};
 
 address_expr: ADDRESS IDENTIFIER {$$=mknode("&",mknode($2,NULL,NULL),NULL);}
-	| ADDRESS OPENPAREN IDENTIFIER CLOSEPAREN {$$=mknode("&",mknode("(",mknode($3,NULL,NULL),NULL),mknode(")",NULL,NULL));}
-	| ADDRESS IDENTIFIER OPENBRACKET expr CLOSEBRACKET 
+	| ADDRESS OPAREN IDENTIFIER CPAREN {$$=mknode("&",mknode("(",mknode($3,NULL,NULL),NULL),mknode(")",NULL,NULL));}
+	| ADDRESS IDENTIFIER OBRACK expr CBRACK 
 	{$$=mknode("&", mknode($2,NULL,NULL), mknode("[",$4,mknode("]",NULL,NULL)));}
-	| ADDRESS OPENPAREN IDENTIFIER OPENBRACKET expr CLOSEBRACKET CLOSEPAREN 
+	| ADDRESS OPAREN IDENTIFIER OBRACK expr CBRACK CPAREN 
 	{
 		$$=mknode("&",
 		mknode("(", 
@@ -264,8 +264,8 @@ address_expr: ADDRESS IDENTIFIER {$$=mknode("&",mknode($2,NULL,NULL),NULL);}
 
 
 	derefrence_expr: DEREFRENCE IDENTIFIER {$$=mknode("^",mknode($2,NULL,NULL),NULL);}
-	| DEREFRENCE OPENPAREN expr CLOSEPAREN {$$=mknode("^",mknode("(",$3,NULL),mknode(")",NULL,NULL));}
-	| DEREFRENCE IDENTIFIER OPENBRACKET expr CLOSEBRACKET 
+	| DEREFRENCE OPAREN expr CPAREN {$$=mknode("^",mknode("(",$3,NULL),mknode(")",NULL,NULL));}
+	| DEREFRENCE IDENTIFIER OBRACK expr CBRACK 
 	{$$=mknode($1, mknode($2,NULL,NULL), mknode("[",$4,mknode("]",NULL,NULL)));};
 
 	//list of expreession
@@ -273,7 +273,7 @@ expr_list: expr COMMA expr_list {$$=mknode("",$1,mknode(",",$3,NULL));}
 	| expr {$$=mknode("",$1,NULL);}
 	| {$$=NULL;};
 
-paren_expr:OPENPAREN expr_list CLOSEPAREN {$$=$2;};
+paren_expr:OPAREN expr_list CPAREN {$$=$2;};
 //call func rul 
 call_func: IDENTIFIER paren_expr {$$=mknode("Call func",mknode($1,NULL,NULL),mknode("ARGS",$2,NULL));} ;
 %%

@@ -8,11 +8,11 @@
 true {return BOOLTRUE;}
 false {return BOOLFALSE;}
 [a-zA-Z][a-zA-Z0-9_]* { yylval.string= strdup(yytext);return IDENTIFIER;}
-"\""[^"]*"\"" {yylval.string= strdup(yytext);return STRING_LTL;}
-\'.\' {yylval.string= strdup(yytext);return CHAR_LTL;}
-[+-]?[1-9][0-9]*|[0-9] {yylval.string= strdup(yytext);return DECIMAL_LTL;}
-0(x|X)[0-9A-F]+ {yylval.string= strdup(yytext);return HEX_LTL;}
-[-+]?[0-9]*\.?[0-9]*[eE]?[-+]?[0-9]+ {yylval.string= strdup(yytext);return REAL_LTL;}
+"\""[^"]*"\"" {yylval.string= strdup(yytext);return STRING;}
+\'.\' {yylval.string= strdup(yytext);return CHAR;}
+[+-]?[1-9][0-9]*|[0-9] {yylval.string= strdup(yytext);return DECIMAL;}
+0(x|X)[0-9A-F]+ {yylval.string= strdup(yytext);return HEX;}
+[-+]?[0-9]*\.?[0-9]*[eE]?[-+]?[0-9]+ {yylval.string= strdup(yytext);return REAL;}
 [ \n\t]   { /* skip whitespace */}
 . return yytext[0];
 
@@ -32,6 +32,7 @@ for {return FOR;}
 var {return VAR;}
 arg-> {return FUNC_ARGS;}
 function {return FUNCTION;}
+procedure {return PROCEDURE;}
 return {return RETURN;}
 null {return NULL_T;}
 void {return VOID;}
@@ -54,17 +55,19 @@ main {return MAIN;}
 "+" {return ADD;}
 "*" {return MUL;}
 "&" {return ADDRESS;}
+"^" {return DEREFRENCE;}
 
   /*Other Lexemes*/
+":" {return COLON;}
 ";" {return SEMICOLON;}
 "," {return COMMA;}
 "|" {return LENGTH;}
-"{" {return OBRACK;}
-"}" {return CBRACK;}
+"{" {return OBRACE;}
+"}" {return CBRACE;}
 "(" {return OPAREN;}
 ")" {return CPAREN;}
-"[" {return OCROT;}
-"]" {return CCROT;}
+"[" {return OBRACK;}
+"]" {return CBRACK;}
 
 [/][*][^*]*[*]+([^*/][^*]*[*]+)*[/]  { return COMMENT;}
 
