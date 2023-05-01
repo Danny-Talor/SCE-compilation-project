@@ -1,0 +1,1 @@
+run "sh compile.sh" to compile and run the first part of the project
