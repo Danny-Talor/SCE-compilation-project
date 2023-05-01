@@ -11,6 +11,7 @@ node *makeNode(char *token, node *left, node *right);
 void printTree(node *tree, int tab);
 void printTabs(int numOfTabs);
 int yyerror(char *err);
+int yylex();
 %}
 
 %union
@@ -18,17 +19,16 @@ int yyerror(char *err);
     char *string;
     struct node *node;
 }
-                        /*values*/
+
 %token <string> ID FUNC TRUE_VAL FALSE_VAL
 %token <string> DECIMAL_INT_NUMBER HEX_INT_NUMBER REAL_NUMBER CHAR_VAL STRING_VAL
-                       /*types*/
-%token <string> CHAR INT REAL STRING INTP CHARP REALP VOID BOOL VAR 
 
-                        /*STATEMENT*/
-%token <string> ELSE IF PLUS MINUS MULT DIV WHILE DO FOR RETURN NONE NOT
+%token <string> CHAR INT REAL STRING INTP CHARP REALP VOID BOOL VAR
+
+%token <string> ELSE IF PLUS MINUS MULT DIV WHILE DO FOR RETURN NONE NOT FUNCARGS
 %token <string> OP_EQ OP_OR OP_AND OP_GT OP_GE OP_LE OP_LT ASSIGN OP_NOT_EQ ADDRESS DER_ID
 
-%type <string> type func_type premitiveValue unaryOp
+%type <string> type ret_type premitiveValue unaryOp
 %type <node> s initial code function procedure args_Id args body Update declaration stmt stringType math_expr string_Id addressOf bodyproc
 %type <node> expr elementOfExpr assignment multiAssign funcarguments ifStmt Block nestedStmt forStmt whileStmt returnStmt doStmt longdeclaration
 %type <node> Procstmt ProcifStmt ProcwhileStmt funcstmt ProcdoStmt ProcforStmt Blockproc ProcnestedStmt
@@ -41,6 +41,7 @@ int yyerror(char *err);
 %left PLUS MINUS
 %left MULT DIV
 %left OP_NOT_EQ
+%left FUNCARGS
 %%
 
 s: initial {
@@ -53,41 +54,41 @@ code:       function code{ $$ = makeNode("FUNCTION",$1, $2); }
     |       procedure code{ $$ = makeNode("FUNCTION",$1, $2); }
     |       procedure { $$ = makeNode("FUNCTION",$1, NULL); };
 
-/*_____________ procedure / function ________________*/
+function : FUNC ID '(' args ')' ':' type '{' body '}' {$$ = makeNode($2, NULL, makeNode("ARGS", $4, makeNode($7, NULL, $9))); };
 
-function   :   FUNC func_type ID '(' args ')' '{' body  '}' {$$ = makeNode($3,NULL, makeNode("ARGS", $5,makeNode($2, NULL,$8))); };
+procedure  :   FUNC ID '(' args ')' ':' VOID '{' bodyproc '}' {$$ = makeNode($2,NULL, makeNode("ARGS", $4,makeNode("TYPE VOID", NULL,$9))); };
 
-procedure  :   FUNC VOID ID '(' args ')' '{' bodyproc '}' {$$ = makeNode($3,NULL, makeNode("ARGS", $5,makeNode("TYPE VOID", NULL,$8))); };
-
-
-args       :   type args_Id args  { $$ = makeNode($1, $2, $3); }
-           |   stringType args_Id args {$1 ->left->right = $2; $1->right =$3; $$=$1;}
+args       :   args_Id type { $$ = makeNode($2, $1, NULL); }
+           |   args ',' args_Id type { $$ = makeNode($4, $3, $1); }
+           |   FUNCARGS args_Id type { $$ = makeNode($3, $2, NULL); $$->left = makeNode("", NULL, $2); }
+           |   FUNCARGS args_Id type ';' args { $$ = makeNode($3, $2, $5); $$->left = makeNode("", NULL, $2); }
            |   { $$ = NULL; };
 
-
 args_Id    :   ID { $$ = makeNode($1, NULL, NULL); } 
-           |   ID ';' { $$ = makeNode($1, NULL,NULL); }
+           |   ID ':' { $$ = makeNode($1, NULL,NULL); }
            |   ID ',' args_Id { $$ = makeNode($1, NULL, $3); }
+           |   FUNCARGS ID ',' args_Id { $$ = makeNode($2, NULL, $4); }
+           |   FUNCARGS ID ':' { $$ = makeNode($2, NULL, NULL); $$->left = makeNode($2, NULL, NULL); }
            |   { $$ = NULL; };
 
 string_Id  :   ID '[' math_expr ']' { $$ = makeNode($1, makeNode("[]", NULL,$3), NULL); }
-           |   assignment ';'{ $$ = $1; }
+           |   assignment ':'{ $$ = $1; }
            |   assignment ',' string_Id { $1->right = $3;  $$ = $1; }
            |   ID '[' math_expr ']'  ',' string_Id { $$ = makeNode($1, makeNode("[]", NULL,$3), $6); }
-           |   ID '[' math_expr ']' ';' {$$ = makeNode($1, makeNode("[]", NULL,$3), NULL); };
+           |   ID '[' math_expr ']' ':' {$$ = makeNode($1, makeNode("[]", NULL,$3), NULL); };
 
 
   
-type       :   BOOL { $$ = "BOOL"; }
-           |   CHAR { $$ = "CHAR"; } 
-		       |   INT { $$ = "INT"; }
-		       |   REAL { $$ = "REAL"; }
-		       |   INTP { $$ = "INT_PTR"; }
-		       |   CHARP { $$ = "CHAR_PTR"; }
-	         |   REALP { $$ = "REAL_PTR"; };
+type : BOOL { $$ = "BOOL"; } |
+ CHAR { $$ = "CHAR"; } |
+  INT { $$ = "INT"; } |
+   REAL { $$ = "REAL"; } | 
+   INTP { $$ = "INT_PTR"; } | 
+   CHARP { $$ = "CHAR_PTR"; } |
+    REALP { $$ = "REAL_PTR"; };
 
 
-func_type  :   BOOL { $$ = "TYPE BOOL"; }
+ret_type  :   BOOL { $$ = "TYPE BOOL"; }
 		       |   CHAR { $$ = "TYPE CHAR"; } 
 		       |   INT { $$ = "TYPE INT"; }
 	         |   REAL { $$ = "TYPE REAL"; }
@@ -272,7 +273,7 @@ void printTree (node *tree, int tab){
     int nextTab = tab;
     if (strlen(tree->token) > 0) {
         printTabs(tab);
-        printf ("(%s", tree->token);
+        printf ("%s", tree->token);
         if (tree->left != NULL) {
             printf("\n");
         }
@@ -287,7 +288,7 @@ void printTree (node *tree, int tab){
         }
     }
     if (strlen(tree->token) > 0) {
-        printf (")\n");
+        printf ("\n");
     }
     if (tree->right) {
         printTree (tree->right, tab);
