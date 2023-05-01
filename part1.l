@@ -4,6 +4,8 @@
 %}
 %x C_COMMENT
 %%
+
+    /*Keywords Lexemes*/
 function { return FUNC; };	
 bool {return BOOL;}
 "int*" {return INTP;}
@@ -15,8 +17,10 @@ real {return REAL;}
 string {return STRING;}
 void {return VOID;}
 var {return VAR;}
+"arg->" {return FUNCARGS;}
 
 ";" { return ';'; }
+":" { yylval.string = strdup(":"); return ':'; };
 "," { yylval.string = strdup(","); return ','; };
 "|" { return '|'; }
 "{" { return '{'; }
