@@ -26,7 +26,6 @@ null 		{ yylval.string = strdup(yytext); return NONE; };
 void        return VOID;
 do 			{ yylval.string = strdup(yytext); return DO; };
 
-
     /* Operator Lexemes */
 "&&" 		{ yylval.string = strdup("AND"); return OP_AND; };
 "/" 		{ yylval.string = strdup(yytext); return DIV; };
@@ -45,10 +44,10 @@ do 			{ yylval.string = strdup(yytext); return DO; };
 "&" 		{ yylval.string = strdup(yytext); return ADDRESS; }
 
     /* Literal Lexemes */
+[a-zA-Z][a-zA-Z0-9_]*	    { yylval.string = strdup(yytext); return ID; };
 "*"[a-zA-Z][a-zA-Z0-9_]*    { yylval.string = strdup(yytext); return DER_ID; };
 true				        { yylval.string = strdup(yytext); return TRUE_VAL; };
 false 	     		        { yylval.string = strdup(yytext); return FALSE_VAL; };
-[a-zA-Z][a-zA-Z0-9_]*	    { yylval.string = strdup(yytext); return ID; };
 0|[1-9][0-9]*               { yylval.string = strdup(yytext); return DECIMAL_INT_NUMBER; };
 0[xX][A-F0-9]+ 		        { yylval.string = strdup(yytext); return HEX_INT_NUMBER; };
 \'[^\']\'			        { yylval.string = strdup(yytext); return CHAR_VAL; };
@@ -75,6 +74,7 @@ false 	     		        { yylval.string = strdup(yytext); return FALSE_VAL; };
 <COMMENT>\n     { }
 <COMMENT>.      { }
 
+    /* Misc */
 [\n] yylineno++;
 [ \t] ;
 . 		return yytext[0]; 
