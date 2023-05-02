@@ -184,14 +184,14 @@ body_proc: declaration proc_nested_statement { $$ = makeNode("BODY", makeNode(""
 
 declaration: function declaration { $$ = makeNode("FUNCTION", $1, $2); }
            | string_type declaration {$$ = makeNode("STRING",$1,$2);}
-           | VAR type long_declaration ';' declaration { $$ = makeNode($2,$3,$5);}
+           | VAR long_declaration ':' type ';' declaration { $$ = makeNode($4,$2,$6);}
            | { $$ = NULL; };
 
 long_declaration: assignment ',' long_declaration {$1->right=$3;$$=$1;}
                 | ID ',' long_declaration {$$ = makeNode($1,NULL,$3);}
                 | assignment  {$$=$1;}
                 | ID  { $$ = makeNode($1, NULL, NULL); } 
-                | { $$ = NULL; };
+                | { $$ = NULL; };             
 
 nested_statement: statement { $$ = $1; }
                 | statement nested_statement { $1->right = $2; $$ = $1; };
