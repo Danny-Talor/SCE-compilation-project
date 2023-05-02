@@ -45,7 +45,6 @@ do 			{ yylval.string = strdup(yytext); return DO; };
 "&" 		{ yylval.string = strdup(yytext); return ADDRESS; }
 
     /* Literal Lexemes */
-
 "*"[a-zA-Z][a-zA-Z0-9_]*    { yylval.string = strdup(yytext); return DER_ID; };
 true				        { yylval.string = strdup(yytext); return TRUE_VAL; };
 false 	     		        { yylval.string = strdup(yytext); return FALSE_VAL; };
