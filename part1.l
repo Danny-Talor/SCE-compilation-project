@@ -5,7 +5,7 @@
 %x COMMENT
 %%
 
-/* Keywords Lexemes */
+    /* Keywords Lexemes */
 bool        return BOOL;
 char        return CHAR;
 int         return INT;
@@ -27,7 +27,7 @@ void        return VOID;
 do 			{ yylval.string = strdup(yytext); return DO; };
 
 
-/* Operator Lexemes */
+    /* Operator Lexemes */
 "&&" 		{ yylval.string = strdup("AND"); return OP_AND; };
 "/" 		{ yylval.string = strdup(yytext); return DIV; };
 "="	        { yylval.string = strdup(yytext); return ASSIGN; };
@@ -44,7 +44,7 @@ do 			{ yylval.string = strdup(yytext); return DO; };
 "*"			{ yylval.string = strdup(yytext); return MULT; };
 "&" 		{ yylval.string = strdup(yytext); return ADDRESS; }
 
-/* Literal Lexemes */
+    /* Literal Lexemes */
 
 "*"[a-zA-Z][a-zA-Z0-9_]*    { yylval.string = strdup(yytext); return DER_ID; };
 true				        { yylval.string = strdup(yytext); return TRUE_VAL; };
@@ -55,16 +55,10 @@ false 	     		        { yylval.string = strdup(yytext); return FALSE_VAL; };
 \'[^\']\'			        { yylval.string = strdup(yytext); return CHAR_VAL; };
 \"[^\"]*\"			        { yylval.string = strdup(yytext); return STRING_VAL; };
 [0-9]*[\.]?[0-9]+|[-+]?[0-9]*[\.]?[0-9]?+[eE][-+]?[0-9]+	{ yylval.string = strdup(yytext); return REAL_NUMBER; };
-
-"/*"            { BEGIN(COMMENT); }
-<COMMENT>"*/"   { BEGIN(INITIAL); }
-<COMMENT>\n     { }
-<COMMENT>.      { }
-
-" " ;
+" ";
 "*"[a-zA-Z][a-zA-Z0-9_]*    { yylval.string = strdup(yytext); return DER_ID; };
 
-/* Other Lexemes */
+    /* Other Lexemes */
 ";"         return ';'; 
 ","         {yylval.string = strdup(","); return ','; };
 "|"         return '|'; 
@@ -76,8 +70,11 @@ false 	     		        { yylval.string = strdup(yytext); return FALSE_VAL; };
 "]"         return ']'; 
 ":"         {yylval.string = strdup(":"); return ':'; };
 
-/* Comments */
-"/""%".*"%""/"              return COMMENT;
+    /* Comments */
+"/*"            { BEGIN(COMMENT); }
+<COMMENT>"*/"   { BEGIN(INITIAL); }
+<COMMENT>\n     { }
+<COMMENT>.      { }
 
 [\n] yylineno++;
 [ \t] ;
