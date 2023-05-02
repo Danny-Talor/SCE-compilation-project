@@ -144,68 +144,65 @@ args_Id: ID { $$ = makeNode($1, NULL, NULL); }
        | FUNCARGS ID ':' { $$ = makeNode($2, NULL, NULL); $$->left = makeNode($2, NULL, NULL); }
        | { $$ = NULL; };
 
-string_Id  :   ID '[' math_expr ']' { $$ = makeNode($1, makeNode("[]", NULL,$3), NULL); }
-           |   assignment ':'{ $$ = $1; }
-           |   assignment ',' string_Id { $1->right = $3;  $$ = $1; }
-           |   FUNCARGS ID '[' math_expr ']'  ',' string_Id { $$ = makeNode($2, makeNode("[]", NULL,$4), $7); }
-           |   FUNCARGS ID '[' math_expr ']' ':' {$$ = makeNode($2, makeNode("[]", NULL,$4), NULL); };
-
-
+string_Id: ID '[' math_expr ']' { $$ = makeNode($1, makeNode("[]", NULL,$3), NULL); }
+         | assignment ':'{ $$ = $1; }
+         | assignment ',' string_Id { $1->right = $3;  $$ = $1; }
+         | FUNCARGS ID '[' math_expr ']'  ',' string_Id { $$ = makeNode($2, makeNode("[]", NULL,$4), $7); }
+         | FUNCARGS ID '[' math_expr ']' ':' {$$ = makeNode($2, makeNode("[]", NULL,$4), NULL); };
   
-type : BOOL { $$ = "BOOL"; } |
- CHAR { $$ = "CHAR"; } |
-  INT { $$ = "INT"; } |
-   REAL { $$ = "REAL"; } | 
-   INTP { $$ = "INT_PTR"; } | 
-   CHARP { $$ = "CHAR_PTR"; } |
-    REALP { $$ = "REAL_PTR"; };
+type: BOOL { $$ = "BOOL"; } 
+    | CHAR { $$ = "CHAR"; } 
+    | INT { $$ = "INT"; } 
+    | REAL { $$ = "REAL"; } 
+    | INTP { $$ = "INT_PTR"; } 
+    | CHARP { $$ = "CHAR_PTR"; } 
+    | REALP { $$ = "REAL_PTR"; };
+
+ret_type: BOOL { $$ = "TYPE BOOL"; }
+        | CHAR { $$ = "TYPE CHAR"; } 
+		| INT { $$ = "TYPE INT"; }
+	    | REAL { $$ = "TYPE REAL"; }
+        | INTP { $$ = "TYPE INT_PTR"; }
+        | CHARP { $$ = "TYPE CHAR_PTR"; }
+        | REALP { $$ = "TYPE REAL_PTR"; }
+        | STRING {$$ = "TYPE STRING";};
+
+stringType: STRING string_Id { $$ =$2; };
+
+body: declaration nestedStmt returnStmt { $$ = makeNode("BODY", makeNode("", $1, $2),$3); }
+    | declaration returnStmt {$$ = makeNode("BODY",$1, $2); }
+    | nestedStmt returnStmt { $$ = makeNode("BODY", $1 ,$2); };
+
+bodyproc: declaration ProcnestedStmt { $$ = makeNode("BODY", makeNode("", $1, $2),NULL); }
+        | declaration {$$ = makeNode("BODY",$1, NULL); }
+        | ProcnestedStmt { $$ = makeNode("BODY", $1 ,NULL); };
 
 
-ret_type  :   BOOL { $$ = "TYPE BOOL"; }
-		       |   CHAR { $$ = "TYPE CHAR"; } 
-		       |   INT { $$ = "TYPE INT"; }
-	         |   REAL { $$ = "TYPE REAL"; }
-	         |   INTP { $$ = "TYPE INT_PTR"; }
-		       |   CHARP { $$ = "TYPE CHAR_PTR"; }
-		       |   REALP { $$ = "TYPE REAL_PTR"; }
-		       |   STRING {$$ = "TYPE STRING";};
+declaration: function declaration { $$ = makeNode("FUNCTION", $1, $2); }
+           | stringType declaration {$$ = makeNode("STRING",$1,$2);}
+           | VAR type longdeclaration ';' declaration { $$ = makeNode($2,$3,$5);}
+           | { $$ = NULL; };
 
-stringType :   STRING string_Id { $$ =$2; };
-
-body       :   declaration nestedStmt returnStmt { $$ = makeNode("BODY", makeNode("", $1, $2),$3); }
-           |   declaration returnStmt {$$ = makeNode("BODY",$1, $2); }
-           |   nestedStmt returnStmt { $$ = makeNode("BODY", $1 ,$2); };
-
-bodyproc   :   declaration ProcnestedStmt { $$ = makeNode("BODY", makeNode("", $1, $2),NULL); }
-           |   declaration {$$ = makeNode("BODY",$1, NULL); }
-           |   ProcnestedStmt { $$ = makeNode("BODY", $1 ,NULL); };
+longdeclaration: assignment ',' longdeclaration {$1->right=$3;$$=$1;}
+               | ID ',' longdeclaration {$$ = makeNode($1,NULL,$3);}
+               | assignment  {$$=$1;}
+               | ID  { $$ = makeNode($1, NULL, NULL); } 
+               | { $$ = NULL; };
 
 
-declaration:   function declaration { $$ = makeNode("FUNCTION", $1, $2); }
-           |   stringType declaration {$$ = makeNode("STRING",$1,$2);}
-           |   VAR type longdeclaration ';' declaration { $$ = makeNode($2,$3,$5);}
-           |   { $$ = NULL; };
+nestedStmt: stmt { $$ = $1; }
+          | stmt nestedStmt { $1->right = $2; $$ = $1; };
 
-longdeclaration : assignment ',' longdeclaration {$1->right=$3;$$=$1;}
-                | ID ',' longdeclaration {$$ = makeNode($1,NULL,$3);}
-                | assignment  {$$=$1;}
-                | ID  { $$ = makeNode($1, NULL, NULL); } 
-                |   { $$ = NULL; };
+ProcnestedStmt: Procstmt { $$ = $1; }
+              | Procstmt ProcnestedStmt { $1->right = $2; $$ = $1; };
 
-
-nestedStmt :   stmt { $$ = $1; }
-           |   stmt nestedStmt { $1->right = $2; $$ = $1; };
-
-ProcnestedStmt :   Procstmt { $$ = $1; }
-               |   Procstmt ProcnestedStmt { $1->right = $2; $$ = $1; };
-
-Procstmt   :   assignment ';' {$$ = $1;}
-           |   funcstmt {$$=$1;}
-           |   ProcifStmt {$$=$1;}
-           |   ProcwhileStmt { $$ = $1;}
-           |   ProcdoStmt { $$ = $1;}
-           |   Blockproc {$$ = $1;}
-           |   ProcforStmt {$$ = $1;};
+Procstmt: assignment ';' {$$ = $1;}
+        | funcstmt {$$=$1;}
+        | ProcifStmt {$$=$1;}
+        | ProcwhileStmt { $$ = $1;}
+        | ProcdoStmt { $$ = $1;}
+        | Blockproc {$$ = $1;}
+        | ProcforStmt {$$ = $1;};
 
 stmt       :   assignment ';' {$$ = $1;}
            |   funcstmt {$$=$1;}
