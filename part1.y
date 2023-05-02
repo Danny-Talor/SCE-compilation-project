@@ -20,18 +20,92 @@ int yylex();
     struct node *node;
 }
 
-%token <string> ID FUNC TRUE_VAL FALSE_VAL
-%token <string> DECIMAL_INT_NUMBER HEX_INT_NUMBER REAL_NUMBER CHAR_VAL STRING_VAL
+%token <string> ID
+%token <string> FUNC
+%token <string> TRUE_VAL
+%token <string> FALSE_VAL
+%token <string> DECIMAL_INT_NUMBER
+%token <string> HEX_INT_NUMBER
+%token <string> REAL_NUMBER
+%token <string> CHAR_VAL
+%token <string> STRING_VAL
+%token <string> CHAR
+%token <string> INT
+%token <string> REAL
+%token <string> STRING
+%token <string> INTP
+%token <string> CHARP
+%token <string> REALP
+%token <string> VOID
+%token <string> BOOL
+%token <string> VAR
+%token <string> ELSE
+%token <string> IF
+%token <string> PLUS
+%token <string> MINUS
+%token <string> MULT
+%token <string> DIV
+%token <string> WHILE
+%token <string> DO     
+%token <string> FOR
+%token <string> RETURN
+%token <string> NONE
+%token <string> NOT
+%token <string> FUNCARGS
+%token <string> OP_EQ
+%token <string> OP_OR
+%token <string> OP_AND
+%token <string> OP_GT
+%token <string> OP_GE
+%token <string> OP_LE
+%token <string> OP_LT
+%token <string> ASSIGN
+%token <string> OP_NOT_EQ
+%token <string> ADDRESS
+%token <string> DER_ID
 
-%token <string> CHAR INT REAL STRING INTP CHARP REALP VOID BOOL VAR
+%type <string> type
+%type <string> ret_type
+%type <string> premitiveValue
+%type <string> unaryOp
 
-%token <string> ELSE IF PLUS MINUS MULT DIV WHILE DO FOR RETURN NONE NOT FUNCARGS
-%token <string> OP_EQ OP_OR OP_AND OP_GT OP_GE OP_LE OP_LT ASSIGN OP_NOT_EQ ADDRESS DER_ID
-
-%type <string> type ret_type premitiveValue unaryOp
-%type <node> s initial code function procedure args_Id args body Update declaration stmt stringType math_expr string_Id addressOf bodyproc
-%type <node> expr elementOfExpr assignment multiAssign funcarguments ifStmt Block nestedStmt forStmt whileStmt returnStmt doStmt longdeclaration
-%type <node> Procstmt ProcifStmt ProcwhileStmt funcstmt ProcdoStmt ProcforStmt Blockproc ProcnestedStmt
+%type <node> start
+%type <node> initial
+%type <node> code
+%type <node> function
+%type <node> procedure
+%type <node> args_Id
+%type <node> args
+%type <node> body
+%type <node> Update
+%type <node> declaration
+%type <node> stmt
+%type <node> stringType
+%type <node> math_expr
+%type <node> string_Id
+%type <node> addressOf
+%type <node> bodyproc
+%type <node> expr
+%type <node> elementOfExpr
+%type <node> assignment
+%type <node> multiAssign
+%type <node> funcarguments
+%type <node> ifStmt
+%type <node> Block
+%type <node> nestedStmt
+%type <node> forStmt
+%type <node> whileStmt
+%type <node> returnStmt
+%type <node> doStmt
+%type <node> longdeclaration
+%type <node> Procstmt
+%type <node> ProcifStmt
+%type <node> ProcwhileStmt
+%type <node> funcstmt
+%type <node> ProcdoStmt
+%type <node> ProcforStmt
+%type <node> Blockproc
+%type <node> ProcnestedStmt
 
 %right UNARY
 %left OP_OR
@@ -44,7 +118,7 @@ int yylex();
 %left FUNCARGS
 %%
 
-s: initial {
+start: initial {
         printTree($1,0);
     };
 initial    :   code { $$ = makeNode("CODE", $1, NULL); };
