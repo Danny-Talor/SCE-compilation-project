@@ -36,33 +36,33 @@ int yylex();
 %token <string> FUNCARGS
 %token <string> FUNC
 %token <string> RETURN
-%token <string> NONE
+%token <string> NULLP
 %token <string> VOID
 %token <string> DO
-%token <string> OP_AND
+%token <string> AND
 %token <string> DIV
 %token <string> ASSIGN
-%token <string> OP_EQ
-%token <string> OP_GT
-%token <string> OP_GE
-%token <string> OP_LT
-%token <string> OP_LE
-%token <string> MINUS
+%token <string> EQ
+%token <string> GT
+%token <string> GTE
+%token <string> LT
+%token <string> LTE
+%token <string> SUB
 %token <string> NOT
-%token <string> OP_NOT_EQ
-%token <string> OP_OR
-%token <string> PLUS
-%token <string> MULT
+%token <string> NEQ
+%token <string> OR
+%token <string> ADD
+%token <string> MUL
 %token <string> ADDRESS
 %token <string> ID
 %token <string> DER_ID
 %token <string> TRUE_VAL
 %token <string> FALSE_VAL
-%token <string> DECIMAL_INT_NUMBER
-%token <string> HEX_INT_NUMBER
+%token <string> DEC_INT
+%token <string> HEX_INT
 %token <string> CHAR_VAL
 %token <string> STRING_VAL
-%token <string> REAL_NUMBER
+%token <string> REAL_VAL
 
 %type <string> type
 %type <string> ret_type
@@ -93,7 +93,7 @@ int yylex();
 %type <node> if_statement
 %type <node> block
 %type <node> nested_statement
-%type <node> forStmt
+%type <node> for_statement
 %type <node> while_statement
 %type <node> return_statement
 %type <node> do_statement
@@ -108,13 +108,13 @@ int yylex();
 %type <node> proc_nested_statement
 
 %right UNARY
-%left OP_OR
-%left OP_AND
-%left OP_EQ
-%left OP_GT OP_GE OP_LE OP_LT
-%left PLUS MINUS
-%left MULT DIV
-%left OP_NOT_EQ
+%left OR
+%left AND
+%left EQ
+%left GT GTE LTE LT
+%left ADD SUB
+%left MUL DIV
+%left NEQ
 %left FUNCARGS
 %%
 
@@ -174,8 +174,8 @@ body: declaration nested_statement return_statement { $$ = makeNode("BODY", make
     | nested_statement return_statement { $$ = makeNode("BODY", $1 ,$2); };
 
 body_proc: declaration proc_nested_statement { $$ = makeNode("BODY", makeNode("", $1, $2),NULL); }
-        | declaration {$$ = makeNode("BODY",$1, NULL); }
-        | proc_nested_statement { $$ = makeNode("BODY", $1 ,NULL); };
+         | declaration {$$ = makeNode("BODY",$1, NULL); }
+         | proc_nested_statement { $$ = makeNode("BODY", $1 ,NULL); };
 
 
 declaration: function declaration { $$ = makeNode("FUNCTION", $1, $2); }
@@ -184,40 +184,40 @@ declaration: function declaration { $$ = makeNode("FUNCTION", $1, $2); }
            | { $$ = NULL; };
 
 long_declaration: assignment ',' long_declaration {$1->right=$3;$$=$1;}
-               | ID ',' long_declaration {$$ = makeNode($1,NULL,$3);}
-               | assignment  {$$=$1;}
-               | ID  { $$ = makeNode($1, NULL, NULL); } 
-               | { $$ = NULL; };
+                | ID ',' long_declaration {$$ = makeNode($1,NULL,$3);}
+                | assignment  {$$=$1;}
+                | ID  { $$ = makeNode($1, NULL, NULL); } 
+                | { $$ = NULL; };
 
 
 nested_statement: statement { $$ = $1; }
-          | statement nested_statement { $1->right = $2; $$ = $1; };
+                | statement nested_statement { $1->right = $2; $$ = $1; };
 
 proc_nested_statement: proc_statement { $$ = $1; }
-              | proc_statement proc_nested_statement { $1->right = $2; $$ = $1; };
+                     | proc_statement proc_nested_statement { $1->right = $2; $$ = $1; };
 
 proc_statement: assignment ';' {$$ = $1;}
-        | func_statement {$$=$1;}
-        | proc_if_statement {$$=$1;}
-        | proc_while_statement { $$ = $1;}
-        | proc_do_statement { $$ = $1;}
-        | block_proc {$$ = $1;}
-        | proc_for_statement {$$ = $1;};
+              | func_statement {$$=$1;}
+              | proc_if_statement {$$=$1;}
+              | proc_while_statement { $$ = $1;}
+              | proc_do_statement { $$ = $1;}
+              | block_proc {$$ = $1;}
+              | proc_for_statement {$$ = $1;};
 
 statement: assignment ';' {$$ = $1;}
-    | func_statement {$$=$1;}
-    | if_statement {$$=$1;}
-    | while_statement { $$ = $1;}
-    | do_statement { $$ = $1;}
-    | block {$$ = $1;}
-    | forStmt {$$ = $1;};
+         | func_statement {$$=$1;}
+         | if_statement {$$=$1;}
+         | while_statement { $$ = $1;}
+         | do_statement { $$ = $1;}
+         | block {$$ = $1;}
+         | for_statement {$$ = $1;};
 
 func_statement: ID ASSIGN ID '(' func_arguments ')' ';' { $$ = makeNode($2,makeNode($1,NULL,makeNode($3,$5,NULL)),NULL); }
-        | ID '(' func_arguments ')' ';' {$$ = makeNode($1,$3,NULL);};
+              | ID '(' func_arguments ')' ';' {$$ = makeNode($1,$3,NULL);};
 
 func_arguments: { $$ = NULL; }
-             | math_expression ',' func_arguments {$1->right=$3;$$=$1;}
-             | math_expression{ $$ = $1; } ;
+              | math_expression ',' func_arguments {$1->right=$3;$$=$1;}
+              | math_expression{ $$ = $1; } ;
 
 
 assignment: ID ASSIGN math_expression { $$ = makeNode($2,makeNode($1,NULL, $3), NULL);}
@@ -231,15 +231,15 @@ assignment: ID ASSIGN math_expression { $$ = makeNode($2,makeNode($1,NULL, $3), 
 
 
 multi_assign: assignment { $$ = $1; }
-           | assignment ',' multi_assign { $$ = makeNode("", $1, $3); }
-           | { $$ = NULL; };
+            | assignment ',' multi_assign { $$ = makeNode("", $1, $3); }
+            | { $$ = NULL; };
 
 
 if_statement: IF '(' expression ')' statement { $$ = makeNode("IF",$3,$5);}
-      | IF '(' expression ')' statement ELSE statement { $$ = makeNode("IF-ELSE", makeNode("", $3, makeNode("", $5,$7)), NULL); };
+            | IF '(' expression ')' statement ELSE statement { $$ = makeNode("IF-ELSE", makeNode("", $3, makeNode("", $5,$7)), NULL); };
 
 proc_if_statement: IF '(' expression ')' proc_statement { $$ = makeNode("IF",$3,$5);}
-          | IF '(' expression ')' proc_statement ELSE proc_statement { $$ = makeNode("IF-ELSE", makeNode("", $3, makeNode("", $5,$7)), NULL); };
+                 | IF '(' expression ')' proc_statement ELSE proc_statement { $$ = makeNode("IF-ELSE", makeNode("", $3, makeNode("", $5,$7)), NULL); };
 
 while_statement: WHILE '(' expression ')' statement { $$ = makeNode($1, $3, $5); };
 
@@ -249,7 +249,7 @@ do_statement: DO block WHILE '(' expression ')' ';' { $$ = makeNode($1, makeNode
 
 proc_do_statement: DO block_proc WHILE '(' expression ')' ';' { $$ = makeNode($1, makeNode("", $2,NULL), makeNode($3, $5, NULL)); };
 
-forStmt: FOR '(' assignment ';' expression ';' update ')' statement { $$ = makeNode($1, makeNode("INITS", $3, makeNode("EXPR", $5, makeNode("UPDATE", $7, $9))), NULL); };
+for_statement: FOR '(' assignment ';' expression ';' update ')' statement { $$ = makeNode($1, makeNode("INITS", $3, makeNode("EXPR", $5, makeNode("UPDATE", $7, $9))), NULL); };
 
 proc_for_statement: FOR '(' assignment ';' expression ';' update ')' proc_statement { $$ = makeNode($1, makeNode("INITS", $3, makeNode("EXPR", $5, makeNode("UPDATE", $7, $9))), NULL); };
 
@@ -264,61 +264,61 @@ block: '{' '}' {$$ = makeNode("BLOCK",NULL, NULL);}
 
 
 block_proc: '{' '}' {$$ = makeNode("BLOCK",NULL, NULL);}
-         | '{' declaration proc_nested_statement '}' { $$ = makeNode("BLOCK", makeNode("", $2, $3),NULL);}
-         | '{' declaration '}' {$$ = makeNode("BLOCK",$2, NULL); }
-         | '{' proc_nested_statement '}' { $$ = makeNode("BLOCK", $2 ,NULL); };
+          | '{' declaration proc_nested_statement '}' { $$ = makeNode("BLOCK", makeNode("", $2, $3),NULL);}
+          | '{' declaration '}' {$$ = makeNode("BLOCK",$2, NULL); }
+          | '{' proc_nested_statement '}' { $$ = makeNode("BLOCK", $2 ,NULL); };
 
 math_expression: element_of_expression { $$ = $1;}  
-         | math_expression PLUS math_expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);}
-         | math_expression MINUS math_expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-         | math_expression MULT math_expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-         | math_expression DIV math_expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);};
+               | math_expression ADD math_expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);}
+               | math_expression SUB math_expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+               | math_expression MUL math_expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+               | math_expression DIV math_expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);};
 
 expression: element_of_expression {$$ = $1;}
-    | '(' expression ')' {$$ = makeNode("",$2, NULL);}
-	| expression OP_EQ expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-    | MULT '(' expression ')' {$$ = makeNode("*",$3, NULL);}
-	| expression OP_AND expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-	| expression OP_OR expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-	| expression OP_GT expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-	| expression OP_GE expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-	| expression OP_LE expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-	| expression OP_LT expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-    | expression OP_NOT_EQ expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-    | expression PLUS expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);}
-    | expression MINUS expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-    | expression MULT expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-    | unary_op expression %prec UNARY { $$ = makeNode($1, $2, NULL); }
-    | expression DIV expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);}
-    | address_of { $$ = $1; };
+          | '(' expression ')' {$$ = makeNode("",$2, NULL);}
+	      | expression EQ expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+          | MUL '(' expression ')' {$$ = makeNode("*",$3, NULL);}
+	      | expression AND expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+	      | expression OR expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+	      | expression GT expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+	      | expression GTE expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+	      | expression LTE expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+	      | expression LT expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+          | expression NEQ expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+          | expression ADD expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);}
+          | expression SUB expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+          | expression MUL expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+          | unary_op expression %prec UNARY { $$ = makeNode($1, $2, NULL); }
+          | expression DIV expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);}
+          | address_of { $$ = $1; };
 
 
 element_of_expression:   primitive_value {$$ = makeNode($1,NULL, NULL); }
-             |   '|' ID '|' { $$ = makeNode("STR_LEN", makeNode($2, NULL, NULL), NULL); };
+                     |   '|' ID '|' { $$ = makeNode("STR_LEN", makeNode($2, NULL, NULL), NULL); };
 
 
 primitive_value: CHAR_VAL { $$ = $1; }
-              | HEX_INT_NUMBER  { $$ = $1; }
-              | DECIMAL_INT_NUMBER  {$$ = $1; }
-              | REAL_NUMBER { $$ = $1; }
-              | ID { $$ = $1; }
-              | TRUE_VAL { $$ = $1;}
-              | NONE { $$ = $1; }
-              | DER_ID { $$ = $1; }
-              | FALSE_VAL { $$ = $1;};
+               | HEX_INT  { $$ = $1; }
+               | DEC_INT  {$$ = $1; }
+               | REAL_VAL { $$ = $1; }
+               | ID { $$ = $1; }
+               | TRUE_VAL { $$ = $1;}
+               | NULLP { $$ = $1; }
+               | DER_ID { $$ = $1; }
+               | FALSE_VAL { $$ = $1;};
 
 address_of: ADDRESS ID { $$ = makeNode($1, makeNode($2, NULL, NULL), NULL); }
-         | ADDRESS ID '[' expression ']' { $$ = makeNode($1, makeNode($2, makeNode("[]", $4, NULL), NULL), NULL); };
+          | ADDRESS ID '[' expression ']' { $$ = makeNode($1, makeNode($2, makeNode("[]", $4, NULL), NULL), NULL); };
 
 return_statement: RETURN math_expression ';' { $$ = makeNode("RET", $2, NULL); } ;
 
-update: ID PLUS PLUS { $$ = makeNode("++", makeNode($1, NULL, NULL), NULL); }
-      | ID MINUS MINUS { $$ = makeNode("--", makeNode($1, NULL, NULL), NULL); }
+update: ID ADD ADD { $$ = makeNode("++", makeNode($1, NULL, NULL), NULL); }
+      | ID SUB SUB { $$ = makeNode("--", makeNode($1, NULL, NULL), NULL); }
       | multi_assign { $$ = $1; };
 
-unary_op: PLUS { $$ = $1; }
-       | MINUS { $$ = $1; }
-       | NOT {$$ = $1;};
+unary_op: ADD { $$ = $1; }
+        | SUB { $$ = $1; }
+        | NOT {$$ = $1;};
 
 %%
 #include "lex.yy.c"
