@@ -182,7 +182,6 @@ body_proc: declaration proc_nested_statement { $$ = makeNode("BODY", makeNode(""
          | declaration {$$ = makeNode("BODY",$1, NULL); }
          | proc_nested_statement { $$ = makeNode("BODY", $1 ,NULL); };
 
-
 declaration: function declaration { $$ = makeNode("FUNCTION", $1, $2); }
            | string_type declaration {$$ = makeNode("STRING",$1,$2);}
            | VAR type long_declaration ';' declaration { $$ = makeNode($2,$3,$5);}
@@ -193,7 +192,6 @@ long_declaration: assignment ',' long_declaration {$1->right=$3;$$=$1;}
                 | assignment  {$$=$1;}
                 | ID  { $$ = makeNode($1, NULL, NULL); } 
                 | { $$ = NULL; };
-
 
 nested_statement: statement { $$ = $1; }
                 | statement nested_statement { $1->right = $2; $$ = $1; };
@@ -224,7 +222,6 @@ func_arguments: { $$ = NULL; }
               | math_expression ',' func_arguments {$1->right=$3;$$=$1;}
               | math_expression{ $$ = $1; } ;
 
-
 assignment: ID ASSIGN math_expression { $$ = makeNode($2,makeNode($1,NULL, $3), NULL);}
           | ID ASSIGN expression { $$ = makeNode($2,makeNode($1,NULL, $3), NULL);}
           | ADDRESS ID ASSIGN expression { $$ = makeNode($1,makeNode($3,makeNode($2,NULL, $4), NULL), NULL);}
@@ -234,11 +231,9 @@ assignment: ID ASSIGN math_expression { $$ = makeNode($2,makeNode($1,NULL, $3), 
           | ID '[' math_expression ']' ASSIGN CHAR_VAL {$$ = makeNode($5, makeNode($1, makeNode("[]",NULL,$3),NULL),makeNode($6,NULL,NULL));}
           | ID '[' math_expression ']' ASSIGN ID {$$ = makeNode($5, makeNode($1, makeNode("[]",NULL,$3),NULL),makeNode($6,NULL,NULL));};
 
-
 multi_assign: assignment { $$ = $1; }
             | assignment ',' multi_assign { $$ = makeNode("", $1, $3); }
             | { $$ = NULL; };
-
 
 if_statement: IF '(' expression ')' statement { $$ = makeNode("IF",$3,$5);}
             | IF '(' expression ')' statement ELSE statement { $$ = makeNode("IF-ELSE", makeNode("", $3, makeNode("", $5,$7)), NULL); };
@@ -265,8 +260,6 @@ block: '{' '}' {$$ = makeNode("BLOCK",NULL, NULL);}
      | '{' declaration proc_nested_statement '}' { $$ = makeNode("BLOCK", makeNode("", $2, $3),NULL);}
      | '{' declaration '}' {$$ = makeNode("BLOCK",$2, NULL); }
      | '{' proc_nested_statement '}' { $$ = makeNode("BLOCK", $2 ,NULL); };
-               
-
 
 block_proc: '{' '}' {$$ = makeNode("BLOCK",NULL, NULL);}
           | '{' declaration proc_nested_statement '}' { $$ = makeNode("BLOCK", makeNode("", $2, $3),NULL);}
@@ -297,10 +290,8 @@ expression: element_of_expression {$$ = $1;}
           | expression DIV expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);}
           | address_of { $$ = $1; };
 
-
 element_of_expression:   primitive_value {$$ = makeNode($1,NULL, NULL); }
                      |   '|' ID '|' { $$ = makeNode("STR_LEN", makeNode($2, NULL, NULL), NULL); };
-
 
 primitive_value: CHAR_VAL { $$ = $1; }
                | HEX_INT  { $$ = $1; }
