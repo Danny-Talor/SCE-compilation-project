@@ -152,9 +152,9 @@ string_Id  :   ID '[' math_expr ']' { $$ = makeNode($1, makeNode("[]", NULL,$3),
 
 
   
-type : BOOL { $$ = "BOOL"; } |
- CHAR { $$ = "CHAR"; } |
-  INT { $$ = "INT"; } |
+type: BOOL { $$ = "BOOL"; } 
+    | CHAR { $$ = "CHAR"; } 
+    | INT { $$ = "INT"; } |
    REAL { $$ = "REAL"; } | 
    INTP { $$ = "INT_PTR"; } | 
    CHARP { $$ = "CHAR_PTR"; } |
@@ -207,124 +207,121 @@ Procstmt   :   assignment ';' {$$ = $1;}
            |   Blockproc {$$ = $1;}
            |   ProcforStmt {$$ = $1;};
 
-stmt       :   assignment ';' {$$ = $1;}
-           |   funcstmt {$$=$1;}
-           |   ifStmt {$$=$1;}
-           |   whileStmt { $$ = $1;}
-           |   doStmt { $$ = $1;}
-           |   Block {$$ = $1;}
-           |   forStmt {$$ = $1;};
+stmt: assignment ';' {$$ = $1;}
+    | funcstmt {$$=$1;}
+    | ifStmt {$$=$1;}
+    | whileStmt { $$ = $1;}
+    | doStmt { $$ = $1;}
+    | Block {$$ = $1;}
+    | forStmt {$$ = $1;};
 
-funcstmt   :   ID ASSIGN ID '(' funcarguments ')' ';' { $$ = makeNode($2,makeNode($1,NULL,makeNode($3,$5,NULL)),NULL); }
-           |   ID '(' funcarguments ')' ';' {$$ = makeNode($1,$3,NULL);};
+funcstmt: ID ASSIGN ID '(' funcarguments ')' ';' { $$ = makeNode($2,makeNode($1,NULL,makeNode($3,$5,NULL)),NULL); }
+        | ID '(' funcarguments ')' ';' {$$ = makeNode($1,$3,NULL);};
 
-funcarguments   :   { $$ = NULL; }
-                |  math_expr ',' funcarguments {$1->right=$3;$$=$1;}
-                |  math_expr{ $$ = $1; } ;
-
-
-assignment :   ID ASSIGN math_expr { $$ = makeNode($2,makeNode($1,NULL, $3), NULL);}
-           |   ID ASSIGN expr { $$ = makeNode($2,makeNode($1,NULL, $3), NULL);}
-
-           |  ADDRESS ID ASSIGN expr { $$ = makeNode($1,makeNode($3,makeNode($2,NULL, $4), NULL), NULL);}
-           |   ID ASSIGN STRING_VAL {$$ = makeNode($2, makeNode($1, makeNode($3,NULL, NULL), NULL), NULL);}
-           |   ID '[' math_expr ']' ASSIGN STRING_VAL {$$ = makeNode($5, makeNode($1, makeNode("[]",NULL,$3),NULL),makeNode($6,NULL,NULL));}
-
-     |   ID ASSIGN ID '[' math_expr ']' {$$ = makeNode($2, makeNode($1,NULL,makeNode($3,makeNode("[]",NULL,$5),NULL)),NULL);}
-
-           |   ID '[' math_expr ']' ASSIGN CHAR_VAL {$$ = makeNode($5, makeNode($1, makeNode("[]",NULL,$3),NULL),makeNode($6,NULL,NULL));}
-           |   ID '[' math_expr ']' ASSIGN ID {$$ = makeNode($5, makeNode($1, makeNode("[]",NULL,$3),NULL),makeNode($6,NULL,NULL));};
+funcarguments: { $$ = NULL; }
+             | math_expr ',' funcarguments {$1->right=$3;$$=$1;}
+             | math_expr{ $$ = $1; } ;
 
 
-multiAssign:   assignment { $$ = $1; }
-           |   assignment ',' multiAssign { $$ = makeNode("", $1, $3); }
-           |   { $$ = NULL; };
+assignment: ID ASSIGN math_expr { $$ = makeNode($2,makeNode($1,NULL, $3), NULL);}
+          | ID ASSIGN expr { $$ = makeNode($2,makeNode($1,NULL, $3), NULL);}
+          | ADDRESS ID ASSIGN expr { $$ = makeNode($1,makeNode($3,makeNode($2,NULL, $4), NULL), NULL);}
+          | ID ASSIGN STRING_VAL {$$ = makeNode($2, makeNode($1, makeNode($3,NULL, NULL), NULL), NULL);}
+          | ID '[' math_expr ']' ASSIGN STRING_VAL {$$ = makeNode($5, makeNode($1, makeNode("[]",NULL,$3),NULL),makeNode($6,NULL,NULL));}
+          | ID ASSIGN ID '[' math_expr ']' {$$ = makeNode($2, makeNode($1,NULL,makeNode($3,makeNode("[]",NULL,$5),NULL)),NULL);}
+          | ID '[' math_expr ']' ASSIGN CHAR_VAL {$$ = makeNode($5, makeNode($1, makeNode("[]",NULL,$3),NULL),makeNode($6,NULL,NULL));}
+          | ID '[' math_expr ']' ASSIGN ID {$$ = makeNode($5, makeNode($1, makeNode("[]",NULL,$3),NULL),makeNode($6,NULL,NULL));};
 
 
-ifStmt         :   IF '(' expr ')' stmt { $$ = makeNode("IF",$3,$5);}
-               |   IF '(' expr ')' stmt ELSE stmt { $$ = makeNode("IF-ELSE", makeNode("", $3, makeNode("", $5,$7)), NULL); };
+multiAssign: assignment { $$ = $1; }
+           | assignment ',' multiAssign { $$ = makeNode("", $1, $3); }
+           | { $$ = NULL; };
 
-ProcifStmt     :   IF '(' expr ')' Procstmt { $$ = makeNode("IF",$3,$5);}
-               |   IF '(' expr ')' Procstmt ELSE Procstmt { $$ = makeNode("IF-ELSE", makeNode("", $3, makeNode("", $5,$7)), NULL); };
 
-whileStmt      :  WHILE '(' expr ')' stmt { $$ = makeNode($1, $3, $5); };
+ifStmt: IF '(' expr ')' stmt { $$ = makeNode("IF",$3,$5);}
+      | IF '(' expr ')' stmt ELSE stmt { $$ = makeNode("IF-ELSE", makeNode("", $3, makeNode("", $5,$7)), NULL); };
 
-ProcwhileStmt  :   WHILE '(' expr ')' Procstmt { $$ = makeNode($1, $3, $5); };
+ProcifStmt: IF '(' expr ')' Procstmt { $$ = makeNode("IF",$3,$5);}
+          | IF '(' expr ')' Procstmt ELSE Procstmt { $$ = makeNode("IF-ELSE", makeNode("", $3, makeNode("", $5,$7)), NULL); };
 
-doStmt         :   DO Block WHILE '(' expr ')' ';' { $$ = makeNode($1, makeNode("", $2,NULL), makeNode($3, $5, NULL)); };
+whileStmt: WHILE '(' expr ')' stmt { $$ = makeNode($1, $3, $5); };
 
-ProcdoStmt     :   DO Blockproc WHILE '(' expr ')' ';' { $$ = makeNode($1, makeNode("", $2,NULL), makeNode($3, $5, NULL)); };
+ProcwhileStmt: WHILE '(' expr ')' Procstmt { $$ = makeNode($1, $3, $5); };
 
-forStmt        :   FOR '(' assignment ';' expr ';' Update ')' stmt { $$ = makeNode($1, makeNode("INITS", $3, makeNode("EXPR", $5, makeNode("UPDATE", $7, $9))), NULL); };
+doStmt: DO Block WHILE '(' expr ')' ';' { $$ = makeNode($1, makeNode("", $2,NULL), makeNode($3, $5, NULL)); };
 
-ProcforStmt    :   FOR '(' assignment ';' expr ';' Update ')' Procstmt { $$ = makeNode($1, makeNode("INITS", $3, makeNode("EXPR", $5, makeNode("UPDATE", $7, $9))), NULL); };
+ProcdoStmt: DO Blockproc WHILE '(' expr ')' ';' { $$ = makeNode($1, makeNode("", $2,NULL), makeNode($3, $5, NULL)); };
 
-Block          :   '{' '}' {$$ = makeNode("BLOCK",NULL, NULL);}
-               |   '{' declaration nestedStmt returnStmt '}' { $$ = makeNode("BLOCK", makeNode("", $2, $3),$4); };
-               |   '{' declaration returnStmt '}' { $$ = makeNode("BLOCK", $2, $3); };
-               |   '{' nestedStmt returnStmt '}' { $$ = makeNode("BLOCK", $2, $3); };
-               |   '{' declaration ProcnestedStmt '}' { $$ = makeNode("BLOCK", makeNode("", $2, $3),NULL);}
-               |   '{' declaration '}' {$$ = makeNode("BLOCK",$2, NULL); }
-                |  '{' ProcnestedStmt '}' { $$ = makeNode("BLOCK", $2 ,NULL); };
+forStmt: FOR '(' assignment ';' expr ';' Update ')' stmt { $$ = makeNode($1, makeNode("INITS", $3, makeNode("EXPR", $5, makeNode("UPDATE", $7, $9))), NULL); };
+
+ProcforStmt: FOR '(' assignment ';' expr ';' Update ')' Procstmt { $$ = makeNode($1, makeNode("INITS", $3, makeNode("EXPR", $5, makeNode("UPDATE", $7, $9))), NULL); };
+
+Block: '{' '}' {$$ = makeNode("BLOCK",NULL, NULL);}
+     | '{' declaration nestedStmt returnStmt '}' { $$ = makeNode("BLOCK", makeNode("", $2, $3),$4); };
+     | '{' declaration returnStmt '}' { $$ = makeNode("BLOCK", $2, $3); };
+     | '{' nestedStmt returnStmt '}' { $$ = makeNode("BLOCK", $2, $3); };
+     | '{' declaration ProcnestedStmt '}' { $$ = makeNode("BLOCK", makeNode("", $2, $3),NULL);}
+     | '{' declaration '}' {$$ = makeNode("BLOCK",$2, NULL); }
+     | '{' ProcnestedStmt '}' { $$ = makeNode("BLOCK", $2 ,NULL); };
                
 
 
-Blockproc      :   '{' '}' {$$ = makeNode("BLOCK",NULL, NULL);}
-               |   '{' declaration ProcnestedStmt '}' { $$ = makeNode("BLOCK", makeNode("", $2, $3),NULL);}
-               |   '{' declaration '}' {$$ = makeNode("BLOCK",$2, NULL); }
-           |  '{' ProcnestedStmt '}' { $$ = makeNode("BLOCK", $2 ,NULL); };
+Blockproc: '{' '}' {$$ = makeNode("BLOCK",NULL, NULL);}
+         | '{' declaration ProcnestedStmt '}' { $$ = makeNode("BLOCK", makeNode("", $2, $3),NULL);}
+         | '{' declaration '}' {$$ = makeNode("BLOCK",$2, NULL); }
+         | '{' ProcnestedStmt '}' { $$ = makeNode("BLOCK", $2 ,NULL); };
 
-math_expr  :   elementOfExpr { $$ = $1;}  
-           |   math_expr PLUS math_expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);}
-           |   math_expr MINUS math_expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-           |   math_expr MULT math_expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-           |   math_expr DIV math_expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);};
+math_expr: elementOfExpr { $$ = $1;}  
+         | math_expr PLUS math_expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);}
+         | math_expr MINUS math_expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+         | math_expr MULT math_expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+         | math_expr DIV math_expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);};
 
-expr       :   elementOfExpr {$$ = $1;}
-           |   '(' expr ')' {$$ = makeNode("",$2, NULL);}
-		       |   expr OP_EQ expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-           |  MULT '(' expr ')' {$$ = makeNode("*",$3, NULL);}
-		       |   expr OP_AND expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-		       |   expr OP_OR expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-		       |   expr OP_GT expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-		       |   expr OP_GE expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-		       |   expr OP_LE expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-		       |   expr OP_LT expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-           |   expr OP_NOT_EQ expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-           |   expr PLUS expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);}
-           |   expr MINUS expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-           |   expr MULT expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-           |   unaryOp expr %prec UNARY { $$ = makeNode($1, $2, NULL); }
-           |   expr DIV expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);}
-           |   addressOf { $$ = $1; };
-
-
-elementOfExpr  :   premitiveValue {$$ = makeNode($1,NULL, NULL); }
-               |   '|' ID '|' { $$ = makeNode("STR_LEN", makeNode($2, NULL, NULL), NULL); };
+expr: elementOfExpr {$$ = $1;}
+    | '(' expr ')' {$$ = makeNode("",$2, NULL);}
+	| expr OP_EQ expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+    | MULT '(' expr ')' {$$ = makeNode("*",$3, NULL);}
+	| expr OP_AND expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+	| expr OP_OR expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+	| expr OP_GT expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+	| expr OP_GE expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+	| expr OP_LE expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+	| expr OP_LT expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+    | expr OP_NOT_EQ expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+    | expr PLUS expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);}
+    | expr MINUS expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+    | expr MULT expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
+    | unaryOp expr %prec UNARY { $$ = makeNode($1, $2, NULL); }
+    | expr DIV expr {$1->right = $3; $$ = makeNode($2, $1 ,NULL);}
+    | addressOf { $$ = $1; };
 
 
-premitiveValue :   CHAR_VAL { $$ = $1; }
-               |   HEX_INT_NUMBER  { $$ = $1; }
-               |   DECIMAL_INT_NUMBER  {$$ = $1; }
-               |   REAL_NUMBER { $$ = $1; }
-               |   ID { $$ = $1; }
-               |   TRUE_VAL { $$ = $1;}
-               |   NONE { $$ = $1; }
-               |   DER_ID { $$ = $1; }
-               |   FALSE_VAL { $$ = $1;};
+elementOfExpr:   premitiveValue {$$ = makeNode($1,NULL, NULL); }
+             |   '|' ID '|' { $$ = makeNode("STR_LEN", makeNode($2, NULL, NULL), NULL); };
 
-addressOf      :   ADDRESS ID { $$ = makeNode($1, makeNode($2, NULL, NULL), NULL); }
-               |   ADDRESS ID '[' expr ']' { $$ = makeNode($1, makeNode($2, makeNode("[]", $4, NULL), NULL), NULL); };
 
-returnStmt     :   RETURN math_expr ';' { $$ = makeNode("RET", $2, NULL); } ;
+premitiveValue: CHAR_VAL { $$ = $1; }
+              | HEX_INT_NUMBER  { $$ = $1; }
+              | DECIMAL_INT_NUMBER  {$$ = $1; }
+              | REAL_NUMBER { $$ = $1; }
+              | ID { $$ = $1; }
+              | TRUE_VAL { $$ = $1;}
+              | NONE { $$ = $1; }
+              | DER_ID { $$ = $1; }
+              | FALSE_VAL { $$ = $1;};
 
-Update         :   ID PLUS PLUS { $$ = makeNode("++", makeNode($1, NULL, NULL), NULL); }
-               |   ID MINUS MINUS { $$ = makeNode("--", makeNode($1, NULL, NULL), NULL); }
-               |   multiAssign { $$ = $1; };
+addressOf: ADDRESS ID { $$ = makeNode($1, makeNode($2, NULL, NULL), NULL); }
+         | ADDRESS ID '[' expr ']' { $$ = makeNode($1, makeNode($2, makeNode("[]", $4, NULL), NULL), NULL); };
 
-unaryOp         :   PLUS { $$ = $1; }
-                |   MINUS { $$ = $1; }
-                |   NOT {$$ = $1;};
+returnStmt: RETURN math_expr ';' { $$ = makeNode("RET", $2, NULL); } ;
+
+Update: ID PLUS PLUS { $$ = makeNode("++", makeNode($1, NULL, NULL), NULL); }
+      | ID MINUS MINUS { $$ = makeNode("--", makeNode($1, NULL, NULL), NULL); }
+      | multiAssign { $$ = $1; };
+
+unaryOp: PLUS { $$ = $1; }
+       | MINUS { $$ = $1; }
+       | NOT {$$ = $1;};
 
 %%
 #include "lex.yy.c"
