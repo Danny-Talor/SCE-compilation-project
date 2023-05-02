@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 %}
+%x COMMENT
 %%
 function    return FUNC;
 bool        return BOOL;
@@ -47,7 +48,7 @@ while 		{ yylval.string = strdup(yytext); return WHILE; };
 for 		{ yylval.string = strdup(yytext); return FOR;};
 do 			{ yylval.string = strdup(yytext); return DO; };
 null 		{ yylval.string = strdup(yytext); return NONE; };
-"/""%".*"%""/"              return COMMENT;
+
 "*"[a-zA-Z][a-zA-Z0-9_]*    { yylval.string = strdup(yytext); return DER_ID; };
 true				        { yylval.string = strdup(yytext); return TRUE_VAL; };
 false 	     		        { yylval.string = strdup(yytext); return FALSE_VAL; };
@@ -57,6 +58,12 @@ false 	     		        { yylval.string = strdup(yytext); return FALSE_VAL; };
 \'[^\']\'			        { yylval.string = strdup(yytext); return CHAR_VAL; };
 \"[^\"]*\"			        { yylval.string = strdup(yytext); return STRING_VAL; };
 [0-9]*[\.]?[0-9]+|[-+]?[0-9]*[\.]?[0-9]?+[eE][-+]?[0-9]+	{ yylval.string = strdup(yytext); return REAL_NUMBER; };
+
+"/*"            { BEGIN(COMMENT); }
+<COMMENT>"*/"   { BEGIN(INITIAL); }
+<COMMENT>\n     { }
+<COMMENT>.      { }
+
 " " ;
 [\n] yylineno++;
 [ \t] ;
