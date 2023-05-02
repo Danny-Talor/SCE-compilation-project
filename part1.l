@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 %}
+%x COMMENT
 %%
 
 /* Keywords Lexemes */
@@ -44,6 +45,8 @@ do 			{ yylval.string = strdup(yytext); return DO; };
 "&" 		{ yylval.string = strdup(yytext); return ADDRESS; }
 
 /* Literal Lexemes */
+
+"*"[a-zA-Z][a-zA-Z0-9_]*    { yylval.string = strdup(yytext); return DER_ID; };
 true				        { yylval.string = strdup(yytext); return TRUE_VAL; };
 false 	     		        { yylval.string = strdup(yytext); return FALSE_VAL; };
 [a-zA-Z][a-zA-Z0-9_]*	    { yylval.string = strdup(yytext); return ID; };
@@ -52,6 +55,12 @@ false 	     		        { yylval.string = strdup(yytext); return FALSE_VAL; };
 \'[^\']\'			        { yylval.string = strdup(yytext); return CHAR_VAL; };
 \"[^\"]*\"			        { yylval.string = strdup(yytext); return STRING_VAL; };
 [0-9]*[\.]?[0-9]+|[-+]?[0-9]*[\.]?[0-9]?+[eE][-+]?[0-9]+	{ yylval.string = strdup(yytext); return REAL_NUMBER; };
+
+"/*"            { BEGIN(COMMENT); }
+<COMMENT>"*/"   { BEGIN(INITIAL); }
+<COMMENT>\n     { }
+<COMMENT>.      { }
+
 " " ;
 "*"[a-zA-Z][a-zA-Z0-9_]*    { yylval.string = strdup(yytext); return DER_ID; };
 
