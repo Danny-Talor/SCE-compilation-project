@@ -111,9 +111,14 @@ int yylex();
 %left OR
 %left AND
 %left EQ
-%left GT GTE LTE LT
-%left ADD SUB
-%left MUL DIV
+%left GT
+%left GTE
+%left LTE
+%left LT
+%left ADD
+%left SUB
+%left MUL
+%left DIV
 %left NEQ
 %left FUNCARGS
 %%
