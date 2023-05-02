@@ -93,7 +93,7 @@ int yylex();
 %type <node> if_statement
 %type <node> block
 %type <node> nested_statement
-%type <node> for_stmt
+%type <node> forStmt
 %type <node> while_statement
 %type <node> return_statement
 %type <node> do_statement
@@ -210,7 +210,7 @@ statement: assignment ';' {$$ = $1;}
     | while_statement { $$ = $1;}
     | do_statement { $$ = $1;}
     | block {$$ = $1;}
-    | for_stmt {$$ = $1;};
+    | forStmt {$$ = $1;};
 
 func_statement: ID ASSIGN ID '(' func_arguments ')' ';' { $$ = makeNode($2,makeNode($1,NULL,makeNode($3,$5,NULL)),NULL); }
         | ID '(' func_arguments ')' ';' {$$ = makeNode($1,$3,NULL);};
@@ -249,7 +249,7 @@ do_statement: DO block WHILE '(' expression ')' ';' { $$ = makeNode($1, makeNode
 
 proc_do_statement: DO block_proc WHILE '(' expression ')' ';' { $$ = makeNode($1, makeNode("", $2,NULL), makeNode($3, $5, NULL)); };
 
-for_stmt: FOR '(' assignment ';' expression ';' update ')' statement { $$ = makeNode($1, makeNode("INITS", $3, makeNode("EXPR", $5, makeNode("UPDATE", $7, $9))), NULL); };
+forStmt: FOR '(' assignment ';' expression ';' update ')' statement { $$ = makeNode($1, makeNode("INITS", $3, makeNode("EXPR", $5, makeNode("UPDATE", $7, $9))), NULL); };
 
 proc_for_statement: FOR '(' assignment ';' expression ';' update ')' proc_statement { $$ = makeNode($1, makeNode("INITS", $3, makeNode("EXPR", $5, makeNode("UPDATE", $7, $9))), NULL); };
 
