@@ -118,38 +118,37 @@ int yylex();
 %left FUNCARGS
 %%
 
-start: initial {
-        printTree($1,0);
-    };
-initial    :   code { $$ = makeNode("CODE", $1, NULL); };
+start: initial { printTree($1,0); };
 
-code:       function code{ $$ = makeNode("FUNCTION",$1, $2); }
-    |       function { $$ = makeNode("FUNCTION",$1, NULL); }
-    |       procedure code{ $$ = makeNode("FUNCTION",$1, $2); }
-    |       procedure { $$ = makeNode("FUNCTION",$1, NULL); };
+initial: code { $$ = makeNode("CODE", $1, NULL); };
 
-function : FUNC ID '(' args ')' ':' type '{' body '}' {$$ = makeNode($2, NULL, makeNode("ARGS", $4, makeNode($7, NULL, $9))); };
+code: function code { $$ = makeNode("FUNCTION",$1, $2); } 
+    | function { $$ = makeNode("FUNCTION",$1, NULL); } 
+    | procedure code{ $$ = makeNode("FUNCTION",$1, $2); } 
+    | procedure { $$ = makeNode("FUNCTION",$1, NULL); };
 
-procedure  :   FUNC ID '(' args ')' ':' VOID '{' bodyproc '}' {$$ = makeNode($2,NULL, makeNode("ARGS", $4,makeNode("TYPE VOID", NULL,$9))); };
+function: FUNC ID '(' args ')' ':' type '{' body '}' {$$ = makeNode($2, NULL, makeNode("ARGS", $4, makeNode($7, NULL, $9))); };
 
-args       :   args_Id type { $$ = makeNode($2, $1, NULL); }
-           |   args ',' args_Id type { $$ = makeNode($4, $3, $1); }
-           |   FUNCARGS args_Id type { $$ = makeNode($3, $2, NULL); $$->left = makeNode("", NULL, $2); }
-           |   FUNCARGS args_Id type ';' args { $$ = makeNode($3, $2, $5); $$->left = makeNode("", NULL, $2); }
-           |   { $$ = NULL; };
+procedure: FUNC ID '(' args ')' ':' VOID '{' bodyproc '}' {$$ = makeNode($2,NULL, makeNode("ARGS", $4,makeNode("TYPE VOID", NULL,$9))); };
 
-args_Id    :   ID { $$ = makeNode($1, NULL, NULL); } 
-           |   ID ':' { $$ = makeNode($1, NULL,NULL); }
-           |   ID ',' args_Id { $$ = makeNode($1, NULL, $3); }
-           |   FUNCARGS ID ',' args_Id { $$ = makeNode($2, NULL, $4); }
-           |   FUNCARGS ID ':' { $$ = makeNode($2, NULL, NULL); $$->left = makeNode($2, NULL, NULL); }
-           |   { $$ = NULL; };
+args: args_Id type { $$ = makeNode($2, $1, NULL); }
+    | args ',' args_Id type { $$ = makeNode($4, $3, $1); }
+    | FUNCARGS args_Id type { $$ = makeNode($3, $2, NULL); $$->left = makeNode("", NULL, $2); }
+    | FUNCARGS args_Id type ';' args { $$ = makeNode($3, $2, $5); $$->left = makeNode("", NULL, $2); }
+    | { $$ = NULL; };
+
+args_Id: ID { $$ = makeNode($1, NULL, NULL); } 
+       | ID ':' { $$ = makeNode($1, NULL,NULL); }
+       | ID ',' args_Id { $$ = makeNode($1, NULL, $3); }
+       | FUNCARGS ID ',' args_Id { $$ = makeNode($2, NULL, $4); }
+       | FUNCARGS ID ':' { $$ = makeNode($2, NULL, NULL); $$->left = makeNode($2, NULL, NULL); }
+       | { $$ = NULL; };
 
 string_Id  :   ID '[' math_expr ']' { $$ = makeNode($1, makeNode("[]", NULL,$3), NULL); }
            |   assignment ':'{ $$ = $1; }
            |   assignment ',' string_Id { $1->right = $3;  $$ = $1; }
-           |   ID '[' math_expr ']'  ',' string_Id { $$ = makeNode($1, makeNode("[]", NULL,$3), $6); }
-           |   ID '[' math_expr ']' ':' {$$ = makeNode($1, makeNode("[]", NULL,$3), NULL); };
+           |   FUNCARGS ID '[' math_expr ']'  ',' string_Id { $$ = makeNode($2, makeNode("[]", NULL,$4), $7); }
+           |   FUNCARGS ID '[' math_expr ']' ':' {$$ = makeNode($2, makeNode("[]", NULL,$4), NULL); };
 
 
   
