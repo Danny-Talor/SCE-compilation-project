@@ -81,7 +81,6 @@ int yylex();
 %type <node> declaration
 %type <node> statement
 %type <node> string_type
-%type <node> math_expression
 %type <node> string_Id
 %type <node> address_of
 %type <node> body_proc
@@ -136,7 +135,7 @@ function: FUNC ID '(' args ')' ':' type '{' body '}' {$$ = makeNode($2, NULL, ma
 
 procedure: FUNC ID '(' args ')' ':' VOID '{' body_proc '}' {$$ = makeNode($2,NULL, makeNode("ARGS", $4,makeNode("TYPE VOID", NULL,$9))); };
 
-args: args_Id type { $$ = makeNode($2, $1, NULL); }
+args: args_Id ':' type { $$ = makeNode($3, $1, NULL); }
     | args ',' args_Id type { $$ = makeNode($4, $3, $1); }
     | FUNCARGS args_Id type { $$ = makeNode($3, $2, NULL); $$->left = makeNode("", NULL, $2); }
     | FUNCARGS args_Id type ';' args { $$ = makeNode($3, $2, $5); $$->left = makeNode("", NULL, $2); }
@@ -145,15 +144,16 @@ args: args_Id type { $$ = makeNode($2, $1, NULL); }
 args_Id: ID { $$ = makeNode($1, NULL, NULL); } 
        | ID ':' { $$ = makeNode($1, NULL,NULL); }
        | ID ',' args_Id { $$ = makeNode($1, NULL, $3); }
+       | FUNCARGS ID { $$ = makeNode($2, NULL, NULL); }
        | FUNCARGS ID ',' args_Id { $$ = makeNode($2, NULL, $4); }
        | FUNCARGS ID ':' { $$ = makeNode($2, NULL, NULL); $$->left = makeNode($2, NULL, NULL); }
        | { $$ = NULL; };
 
-string_Id: ID '[' math_expression ']' { $$ = makeNode($1, makeNode("[]", NULL,$3), NULL); }
+string_Id: ID '[' expression ']' { $$ = makeNode($1, makeNode("[]", NULL,$3), NULL); }
          | assignment ':'{ $$ = $1; }
          | assignment ',' string_Id { $1->right = $3;  $$ = $1; }
-         | FUNCARGS ID '[' math_expression ']'  ',' string_Id { $$ = makeNode($2, makeNode("[]", NULL,$4), $7); }
-         | FUNCARGS ID '[' math_expression ']' ':' {$$ = makeNode($2, makeNode("[]", NULL,$4), NULL); };
+         | FUNCARGS ID '[' expression ']'  ',' string_Id { $$ = makeNode($2, makeNode("[]", NULL,$4), $7); }
+         | FUNCARGS ID '[' expression ']' ':' {$$ = makeNode($2, makeNode("[]", NULL,$4), NULL); };
   
 type: BOOL { $$ = "BOOL"; } 
     | CHAR { $$ = "CHAR"; } 
@@ -176,7 +176,8 @@ string_type: STRING string_Id { $$ =$2; };
 
 body: declaration nested_statement return_statement { $$ = makeNode("BODY", makeNode("", $1, $2),$3); }
     | declaration return_statement {$$ = makeNode("BODY",$1, $2); }
-    | nested_statement return_statement { $$ = makeNode("BODY", $1 ,$2); };
+    | nested_statement return_statement { $$ = makeNode("BODY", $1 ,$2); }
+    | nested_statement { $$ = makeNode("BODY", $1 ,NULL); };
 
 body_proc: declaration proc_nested_statement { $$ = makeNode("BODY", makeNode("", $1, $2),NULL); }
          | declaration {$$ = makeNode("BODY",$1, NULL); }
@@ -213,23 +214,25 @@ statement: assignment ';' {$$ = $1;}
          | while_statement { $$ = $1;}
          | do_statement { $$ = $1;}
          | block {$$ = $1;}
-         | for_statement {$$ = $1;};
+         | for_statement {$$ = $1;}
+         | return_statement {$$ = $1;};
 
 func_statement: ID ASSIGN ID '(' func_arguments ')' ';' { $$ = makeNode($2,makeNode($1,NULL,makeNode($3,$5,NULL)),NULL); }
-              | ID '(' func_arguments ')' ';' {$$ = makeNode($1,$3,NULL);};
+              | ID '(' func_arguments ')' {$$ = makeNode($1,$3,NULL);}
+              | ID '(' func_arguments ')' ';' {$$ = makeNode($1,$3,NULL);}
+              | ID '(' func_arguments ')' ADD func_statement {$$ = makeNode($1,$3,$6);};
 
 func_arguments: { $$ = NULL; }
-              | math_expression ',' func_arguments {$1->right=$3;$$=$1;}
-              | math_expression{ $$ = $1; } ;
+              | expression ',' func_arguments {$1->right=$3;$$=$1;}
+              | expression{ $$ = $1; } ;
 
-assignment: ID ASSIGN math_expression { $$ = makeNode($2,makeNode($1,NULL, $3), NULL);}
-          | ID ASSIGN expression { $$ = makeNode($2,makeNode($1,NULL, $3), NULL);}
+assignment: ID ASSIGN expression { $$ = makeNode($2,makeNode($1,NULL, $3), NULL);}
           | ADDRESS ID ASSIGN expression { $$ = makeNode($1,makeNode($3,makeNode($2,NULL, $4), NULL), NULL);}
           | ID ASSIGN STRING_VAL {$$ = makeNode($2, makeNode($1, makeNode($3,NULL, NULL), NULL), NULL);}
-          | ID '[' math_expression ']' ASSIGN STRING_VAL {$$ = makeNode($5, makeNode($1, makeNode("[]",NULL,$3),NULL),makeNode($6,NULL,NULL));}
-          | ID ASSIGN ID '[' math_expression ']' {$$ = makeNode($2, makeNode($1,NULL,makeNode($3,makeNode("[]",NULL,$5),NULL)),NULL);}
-          | ID '[' math_expression ']' ASSIGN CHAR_VAL {$$ = makeNode($5, makeNode($1, makeNode("[]",NULL,$3),NULL),makeNode($6,NULL,NULL));}
-          | ID '[' math_expression ']' ASSIGN ID {$$ = makeNode($5, makeNode($1, makeNode("[]",NULL,$3),NULL),makeNode($6,NULL,NULL));};
+          | ID '[' expression ']' ASSIGN STRING_VAL {$$ = makeNode($5, makeNode($1, makeNode("[]",NULL,$3),NULL),makeNode($6,NULL,NULL));}
+          | ID ASSIGN ID '[' expression ']' {$$ = makeNode($2, makeNode($1,NULL,makeNode($3,makeNode("[]",NULL,$5),NULL)),NULL);}
+          | ID '[' expression ']' ASSIGN CHAR_VAL {$$ = makeNode($5, makeNode($1, makeNode("[]",NULL,$3),NULL),makeNode($6,NULL,NULL));}
+          | ID '[' expression ']' ASSIGN ID {$$ = makeNode($5, makeNode($1, makeNode("[]",NULL,$3),NULL),makeNode($6,NULL,NULL));};
 
 multi_assign: assignment { $$ = $1; }
             | assignment ',' multi_assign { $$ = makeNode("", $1, $3); }
@@ -266,12 +269,6 @@ block_proc: '{' '}' {$$ = makeNode("BLOCK",NULL, NULL);}
           | '{' declaration '}' {$$ = makeNode("BLOCK",$2, NULL); }
           | '{' proc_nested_statement '}' { $$ = makeNode("BLOCK", $2 ,NULL); };
 
-math_expression: element_of_expression { $$ = $1;}  
-               | math_expression ADD math_expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);}
-               | math_expression SUB math_expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-               | math_expression MUL math_expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
-               | math_expression DIV math_expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);};
-
 expression: element_of_expression {$$ = $1;}
           | '(' expression ')' {$$ = makeNode("",$2, NULL);}
 	      | expression EQ expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);} 
@@ -290,8 +287,10 @@ expression: element_of_expression {$$ = $1;}
           | expression DIV expression {$1->right = $3; $$ = makeNode($2, $1 ,NULL);}
           | address_of { $$ = $1; };
 
-element_of_expression:   primitive_value {$$ = makeNode($1,NULL, NULL); }
-                     |   '|' ID '|' { $$ = makeNode("STR_LEN", makeNode($2, NULL, NULL), NULL); };
+element_of_expression: primitive_value {$$ = makeNode($1,NULL, NULL); }
+                     |   '|' ID '|' { $$ = makeNode("STR_LEN", makeNode($2, NULL, NULL), NULL); }
+                     | func_statement { $$ = $1; }
+                     | ID { $$ = makeNode($1,NULL, NULL); };
 
 primitive_value: CHAR_VAL { $$ = $1; }
                | HEX_INT  { $$ = $1; }
@@ -306,7 +305,8 @@ primitive_value: CHAR_VAL { $$ = $1; }
 address_of: ADDRESS ID { $$ = makeNode($1, makeNode($2, NULL, NULL), NULL); }
           | ADDRESS ID '[' expression ']' { $$ = makeNode($1, makeNode($2, makeNode("[]", $4, NULL), NULL), NULL); };
 
-return_statement: RETURN math_expression ';' { $$ = makeNode("RET", $2, NULL); } ;
+return_statement: RETURN expression ';'{ $$ = makeNode("RET", $2, NULL); }
+                | RETURN func_statement { $$ = makeNode("RET", $2, NULL); };
 
 update: ID ADD ADD { $$ = makeNode("++", makeNode($1, NULL, NULL), NULL); }
       | ID SUB SUB { $$ = makeNode("--", makeNode($1, NULL, NULL), NULL); }
