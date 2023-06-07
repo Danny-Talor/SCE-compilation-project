@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include "y.tab.h"
 %}
 %x COMMENT
 %%
@@ -25,6 +26,7 @@ return 		{ yylval.string = strdup(yytext); return RETURN; };
 null 		{ yylval.string = strdup(yytext); return NULLP; };
 void        return VOID;
 do 			{ yylval.string = strdup(yytext); return DO; };
+main        return MAIN;
 
     /* Operator Lexemes */
 "&&" 		{ yylval.string = strdup("AND"); return AND; };

@@ -92,6 +92,7 @@ void push(code* from,char*);
 %token <string> NULLP
 %token <string> VOID
 %token <string> DO
+%token <string> MAIN
 %token <string> AND
 %token <string> DIV
 %token <string> ASSIGN
@@ -124,6 +125,7 @@ void push(code* from,char*);
 %type <node> start
 %type <node> initial
 %type <node> code
+%type <node> main
 %type <node> function
 %type <node> procedure
 %type <node> args_Id
@@ -157,6 +159,7 @@ void push(code* from,char*);
 %type <node> proc_for_statement
 %type <node> block_proc
 %type <node> proc_nested_statement
+%type <node> call_func
 
 %right UNARY
 %left OR
@@ -174,14 +177,18 @@ void push(code* from,char*);
 %left FUNCARGS
 %%
 
-start: initial { printTree($1,printlevel); };
+start: initial { syntaxMKscope($1,mycode); };
 
 initial: code { $$ = makeNode("CODE", $1, NULL);};
 
 code: function code { $$ = makeNode("FUNCTION ",$1, $2); } 
     | function { $$ = makeNode("FUNCTION ",$1, NULL); } 
-    | procedure code{ $$ = makeNode("FUNCTION ",$1, $2); } 
-    | procedure { $$ = makeNode("FUNCTION ",$1, NULL); };
+    | procedure code{ $$ = makeNode("PROC ",$1, $2); } 
+    | procedure { $$ = makeNode("PROC ",$1, NULL); };
+	| main { $$ = makeNode("Main ",$1, NULL); };
+	| {$$=NULL;};
+
+main: FUNC MAIN '(' ')' ':' VOID '{'body_proc '}'  {$$ = makeNode("ARGS NONE",NULL, makeNode("TYPE VOID", NULL,$8)); };
 
 function: FUNC ID '(' args ')' ':' type '{' body '}' {$$ = makeNode($2, NULL, makeNode("ARGS", $4, makeNode($7, NULL, $9))); };
 
@@ -357,6 +364,8 @@ update: ID ADD ADD { $$ = makeNode("++", makeNode($1, NULL, NULL), NULL); }
 unary_op: ADD { $$ = $1; }
         | SUB { $$ = $1; }
         | NOT {$$ = $1;};
+
+call_func: ID '(' func_arguments ')' ';' {$$=makeNode("Call func",makeNode($1,NULL,NULL),makeNode("ARGS",$3,NULL));} ;
 
 %%
 #include "lex.yy.c"
@@ -897,7 +906,6 @@ code* lestcode(code * codey){
 
 
 void syntaxMKscope(node *tree,code * CODEscope){
-
 	if(strcmp(tree->token, "=") == 0 ) {
 		if(!(strcmp(exprtype(tree->right,CODEscope),"NULL")==0
 		&& (strcmp(exprtype(tree->left,CODEscope),"real*")==0
@@ -993,7 +1001,7 @@ void syntaxMKscope(node *tree,code * CODEscope){
 		printf("(%s \n",tree->token);
 	}
 	else if(strcmp(tree->token, "CODE") == 0) {
-		Printtree(tree);
+		printTree(tree,printlevel);
 		push(NULL,tree->token);
 		if (tree->left) syntaxMKscope(tree->left,mycode);
 		if (tree->right) syntaxMKscope(tree->right,mycode);
