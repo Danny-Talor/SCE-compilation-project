@@ -25,6 +25,7 @@ return 		{ yylval.string = strdup(yytext); return RETURN; };
 null 		{ yylval.string = strdup(yytext); return NULLP; };
 void        return VOID;
 do 			{ yylval.string = strdup(yytext); return DO; };
+main        {return MAIN; };
 
     /* Operator Lexemes */
 "&&" 		{ yylval.string = strdup("AND"); return AND; };
