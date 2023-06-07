@@ -905,210 +905,208 @@ code* lestcode(code * codey){
 }
 
 
-void syntaxMKscope(node *tree,code * CODEscope){
-	if(strcmp(tree->token, "=") == 0 ) {
-		if(!(strcmp(exprtype(tree->right,CODEscope),"NULL")==0
-		&& (strcmp(exprtype(tree->left,CODEscope),"real*")==0
-		||strcmp(exprtype(tree->left,CODEscope),"int*")==0
-		||strcmp(exprtype(tree->left,CODEscope),"char*")==0)))
-		if(strcmp(exprtype(tree->left,CODEscope),exprtype(tree->right,CODEscope))!=0) {
-			printf("ERORR, you can't do = between %s and %s in scope %s in func/proc %s\n",exprtype(tree->left,CODEscope),exprtype(tree->right,CODEscope),CODEscope->name,mycode->func[mycode->countfunc-1]->name);
-			exit(1);
-		}
-	}
-	else if(strcmp(tree->token, "var") == 0) {
-		int countvar = 0;
-		Arguments *var = mkArgs(tree, &countvar);
-		addvar(var, countvar, 0, CODEscope);
-	}
-	else if(strcmp(tree->token, "if") == 0) {
-		if(strcmp(exprtype(tree->left->left,CODEscope),"boolean") != 0) {
-			printf("ERORR, in if expr most be type boolean\n");
-			exit(1);
-		}
-		if(strcmp(tree->right->token,"{")!=0) {
-			push(CODEscope,tree->token);
-			if (tree->left) 
-				syntaxMKscope(tree->left,lestcode( CODEscope->nextLVL));
-	
-			if (tree->right)
-				syntaxMKscope(tree->right,lestcode( CODEscope->nextLVL));
-        	scope--;
+void syntaxMKscope(node *tree, code *CODEscope){
+	switch(tree -> token) {
+		case "=":
+            if(!(strcmp(exprtype(tree -> right, CODEscope), "NULL") == 0
+			&& (strcmp( exprtype(tree -> left, CODEscope), "real*") == 0
+			||strcmp(exprtype(tree -> left, CODEscope), "int*") == 0
+			||strcmp(exprtype(tree -> left, CODEscope), "char*") == 0)))
+			if(strcmp(exprtype(tree -> left, CODEscope), exprtype(tree -> right, CODEscope)) != 0) {
+				printf("ERORR, you can"t put = between %s and %s in scope %s in function %s \n",
+				exprtype(tree -> left,CODEscope),exprtype(tree -> right, CODEscope),
+				CODEscope -> name, mycode -> func[mycode -> countfunc - 1] -> name);
+				exit(1)
+			}
+            break;
+		case "var":
+			int countvar = 0;
+			Arguments *var = mkArgs(tree, &countvar);
+			addvar(var, countvar, 0, CODEscope);
+            break;
+		case "if":
+			if(strcmp(exprtype(tree -> left -> left, CODEscope),"bool") != 0) {
+				printf("ERORR, in if expression(must be bool type)\n");
+				exit(1);
+			}
+			if(strcmp(tree -> right -> token,"{") != 0) {
+				push(CODEscope,tree -> token);
+				if (tree -> left) 
+					syntaxMKscope(tree -> left,lestcode( CODEscope -> nextLVL));
+		
+				if (tree -> right)
+					syntaxMKscope(tree -> right,lestcode( CODEscope -> nextLVL));
+				scope--;
+				return;
+			}	
+            break;
+		case "while":
+			if(strcmp(exprtype(tree -> left -> left,CODEscope),"bool") != 0) {
+				printf("ERORR, in while expression(must be bool type)\n");
+				exit(1);
+			}
+			if(strcmp(tree -> right -> token,"{") != 0) {
+				push(CODEscope,tree -> token);
+				if (tree -> left) 
+					syntaxMKscope(tree -> left,lestcode( CODEscope -> nextLVL));
+				if (tree -> right)
+					syntaxMKscope(tree -> right,lestcode( CODEscope -> nextLVL));
+				scope--;
+				return;
+			}
+            break;
+		case "for":
+			if(strcmp(exprtype(tree -> left -> left -> right,CODEscope),"bool") != 0) {
+				printf("ERORR, in for expr most be type boolean\n");
+				exit(1);
+			}
+			syntaxMKscope(tree -> left -> left -> left,CODEscope);
+			syntaxMKscope(tree -> left -> right -> left,CODEscope);
+			if(strcmp(tree -> right -> token,"{") != 0) {
+				push(CODEscope,tree -> token);
+				if (tree -> left) syntaxMKscope(tree -> left,lestcode( CODEscope -> nextLVL));
+				if (tree -> right) syntaxMKscope(tree -> right,lestcode( CODEscope -> nextLVL));
+				scope--;
+				return;
+			}
+            break;
+		case "FUNC":
+			int count=0;
+			Arguments *arg = mkArgs(tree -> left -> right -> left, &count);
+			addFunc(tree -> left -> token,arg,tree -> left -> right -> right -> left, count, CODEscope);
+			push(CODEscope,tree -> token);
+			addvar(arg, count, 1, lestcode(CODEscope));
+			if (tree -> left) syntaxMKscope(tree -> left, lestcode(CODEscope -> nextLVL));
+			if (tree -> right) syntaxMKscope(tree -> right, lestcode(CODEscope -> nextLVL));
+			if(CODEscope -> func[CODEscope -> countfunc-1] -> findreturn == false) {
+				printf("ERORR, in function %s did not find return\n",tree -> left -> token);
+				exit(1);
+			}
+			scope--;		
 			return;
-		}	
-	}
-	else if(strcmp(tree->token, "while") == 0) {
-		if(strcmp(exprtype(tree->left->left,CODEscope),"boolean") != 0) {
-			printf("ERORR, in while expr most be type boolean\n");
-			exit(1);
-		}
-		if(strcmp(tree->right->token,"{") != 0) {
-			push(CODEscope,tree->token);
-			if (tree->left) 
-				syntaxMKscope(tree->left,lestcode( CODEscope->nextLVL));
-			if (tree->right)
-				syntaxMKscope(tree->right,lestcode( CODEscope->nextLVL));
-        	scope--;
-			return;
-		}
-	}
-	else if(strcmp(tree->token, "for") == 0) {
-	    if(strcmp(exprtype(tree->left->left->right,CODEscope),"boolean") != 0) {
-			printf("ERORR, in for expr most be type boolean\n");
-			exit(1);
-		}
-		syntaxMKscope(tree->left->left->left,CODEscope);
-		syntaxMKscope(tree->left->right->left,CODEscope);
-		if(strcmp(tree->right->token,"{") != 0) {
-			push(CODEscope,tree->token);
-			if (tree->left) syntaxMKscope(tree->left,lestcode( CODEscope->nextLVL));
-			if (tree->right) syntaxMKscope(tree->right,lestcode( CODEscope->nextLVL));
-        	scope--;
-			return;
-		}
-	}
-	else if(strcmp(tree->token, "FUNC") == 0 ) {
-        int count=0;
-		Arguments * arg=mkArgs(tree->left->right->left,&count);
-		addFunc(tree->left->token,arg,tree->left->right->right->left,count,CODEscope);
-		push(CODEscope,tree->token);
-		addvar(arg,count,1,lestcode(CODEscope));
-		if (tree->left) syntaxMKscope(tree->left,lestcode( CODEscope->nextLVL));
-		if (tree->right) syntaxMKscope(tree->right,lestcode( CODEscope->nextLVL));
-		if(CODEscope->func[CODEscope->countfunc-1]->findreturn==false) {
-			printf("ERORR,in func %s not find return\n",tree->left->token);
-			exit(1);
-		}
-        scope--;		
-		return;
-	}
-    else if(strcmp(tree->token, "PROC") == 0) {
-        int count=0;
-		Arguments * arg=mkArgs(tree->right->left,&count);
-		addFunc(tree->left->token,arg,NULL,count,CODEscope);
-		push(CODEscope,tree->token);
-		addvar(arg,count,1,lestcode(CODEscope));
-		if (tree->left) 
-			syntaxMKscope(tree->left,lestcode( CODEscope->nextLVL));
-		if (tree->right)
-			syntaxMKscope(tree->right,lestcode( CODEscope->nextLVL));
+            break;
+		case "PROC":
+			int count=0;
+			Arguments * arg=mkArgs(tree -> right -> left,&count);
+			addFunc(tree -> left -> token,arg,NULL,count,CODEscope);
+			push(CODEscope,tree -> token);
+			addvar(arg,count,1,lestcode(CODEscope));
+			if (tree -> left) 
+				syntaxMKscope(tree -> left,lestcode( CODEscope -> nextLVL));
+			if (tree -> right)
+				syntaxMKscope(tree -> right,lestcode( CODEscope -> nextLVL));
 			scope--;	
 			return;
-    }
-
-	else if(strcmp(tree->token, "Call func") == 0) {
-		findfunc(tree,CODEscope);
-		printf("(%s \n",tree->token);
-	}
-	else if(strcmp(tree->token, "CODE") == 0) {
-		printTree(tree,printlevel);
-		push(NULL,tree->token);
-		if (tree->left) syntaxMKscope(tree->left,mycode);
-		if (tree->right) syntaxMKscope(tree->right,mycode);
-		scope--;
-		return;
-	}
-    else if(strcmp(tree->token, "BODY") == 0) { }
-	else if(strcmp(tree->token, "ARGS") == 0) { }
-    else if(strcmp(tree->token, "Main") == 0) {
-		if(flagMain==true && strcmp(CODEscope->name,"CODE")==0) {
-			printf("Main needs to be one anad only and not inside a func/proc\n");
-			exit(1);
-		}
-		flagMain=true;
-		addFunc(tree->token,NULL,NULL,0,CODEscope);
-		push(CODEscope,tree->token);
-		if (tree->left) 
-			syntaxMKscope(tree->left,lestcode( CODEscope->nextLVL));
-		
-		if (tree->right)
-			syntaxMKscope(tree->right,lestcode( CODEscope->nextLVL));
+            break;
+		case "Call func":
+			findfunc(tree,CODEscope);
+			printf("(%s \n",tree -> token);
+            break;
+		case "CODE":
+			printTree(tree, printlevel);
+			push(NULL,tree -> token);
+			if (tree -> left) syntaxMKscope(tree -> left, mycode);
+			if (tree -> right) syntaxMKscope(tree -> right, mycode);
 			scope--;
-			return;        
-    }       
-	else if(strcmp(tree->token, "if-else") == 0) {
-		if(strcmp(exprtype(tree->left->left,CODEscope),"boolean")!=0) {
-			printf("ERORR, in if expr most be type boolean\n");
-			exit(1);
-		}
-		if(strcmp(tree->right->left->token,"{")!=0) {
-			push(CODEscope,tree->token);
-			syntaxMKscope(tree->right->left,lestcode( CODEscope->nextLVL));
-			scope--;
-			push(CODEscope,tree->token);
-			syntaxMKscope(tree->right->right->left,lestcode( CODEscope->nextLVL));
-        	scope--;
 			return;
-		}	
-	}
-	else if(strcmp(tree->token, "return") == 0) {
-		code * temp= CODEscope;
-		int flag=true;
-		while(strcmp(temp->name,"FUNC")!=0&&strcmp(temp->name,"PROC")!=0&&strcmp(temp->name,"CODE")!=0) {
-			temp=temp->beforeLVL;
-			flag=false;
-		}
-		if(flag==false) {
-			if(strcmp(exprtype(tree->left,CODEscope),temp->beforeLVL->func[temp->beforeLVL->countfunc-1]->returnType))
-			{
-			printf("ERORR,return no some type in func %s \n",temp->beforeLVL->func[temp->beforeLVL->countfunc-1]->name);
-			printf("%s ,%s %s\n",exprtype(tree->left,CODEscope),temp->beforeLVL->func[temp->beforeLVL->countfunc-1]->returnType,temp->beforeLVL->func[temp->beforeLVL->countfunc-1]->name);
-			exit(1);
+            break;
+		case "BODY":
+		    break;
+		case "ARGS":
+		    break;
+		case "Main":
+			if(flagMain == true && strcmp(CODEscope -> name,"CODE") == 0) {
+				printf("Main needs to be the one and only and not inside a function\n");
+				exit(1);
 			}
-		}
-		else{
-			if(temp->beforeLVL->func[temp->beforeLVL->countfunc-1]->returnType!=NULL) {
-				if(0==strcmp(exprtype(tree->left,CODEscope),temp->beforeLVL->func[temp->beforeLVL->countfunc-1]->returnType)){
-					temp->beforeLVL->func[temp->beforeLVL->countfunc-1]->findreturn=true;
-				}
-				else {
-					printf("ERORR,return no some type in func %s \n",temp->beforeLVL->func[temp->beforeLVL->countfunc-1]->name);
-					printf("%s ,%s %s\n",exprtype(tree->left,CODEscope),temp->beforeLVL->func[temp->beforeLVL->countfunc-1]->returnType,temp->beforeLVL->func[temp->beforeLVL->countfunc-1]->name);
-					exit(1);
+			flagMain = true;
+			addFunc(tree -> token,NULL,NULL,0,CODEscope);
+			push(CODEscope,tree -> token);
+			if (tree -> left) 
+				syntaxMKscope(tree -> left,lestcode( CODEscope -> nextLVL));
+			if (tree -> right)
+				syntaxMKscope(tree -> right,lestcode( CODEscope -> nextLVL));
+			scope--;
+			return;   
+		    break;
+		case "if-else":
+			if(strcmp(exprtype(tree -> left -> left,CODEscope),"boolean") != 0) {
+				printf("ERORR, in if expr most be type boolean\n");
+				exit(1);
+			}
+			if(strcmp(tree -> right -> left -> token,"{") != 0) {
+				push(CODEscope,tree -> token);
+				syntaxMKscope(tree -> right -> left,lestcode( CODEscope -> nextLVL));
+				scope--;
+				push(CODEscope,tree -> token);
+				syntaxMKscope(tree -> right -> right -> left,lestcode( CODEscope -> nextLVL));
+				scope--;
+				return;
+			}	
+		    break;
+		case "return":
+			code * temp = CODEscope;
+			int flag=true;
+			while(strcmp(temp -> name,"FUNC") != 0&&strcmp(temp -> name,"PROC") != 0&&strcmp(temp -> name,"CODE") != 0) {
+				temp=temp -> beforeLVL;
+				flag=false;
+			}
+			if(flag == false) {
+				if(strcmp(exprtype(tree -> left,CODEscope),temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> returnType)) {
+				printf("ERORR,return no some type in func %s \n",temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
+				printf("%s ,%s %s\n",exprtype(tree -> left,CODEscope),temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> returnType,temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
+				exit(1);
 				}
 			}
 			else {
-				printf("ERORR,return cant be in proc %s\n",temp->beforeLVL->func[temp->beforeLVL->countfunc-1]->name);
-				exit(1);
+				if(temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> returnType!=NULL) {
+					if(0 == strcmp(exprtype(tree -> left,CODEscope),temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> returnType)){
+						temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> findreturn=true;
+					}
+					else {
+						printf("ERORR,return no some type in func %s \n",temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
+						printf("%s ,%s %s\n",exprtype(tree -> left,CODEscope),temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> returnType,temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
+						exit(1);
+					}
+				}
+				else {
+					printf("ERORR,return cant be in proc %s\n",temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
+					exit(1);
+				}  
 			}  
-		}  
+		    break;
+		case "{":
+			push(CODEscope,tree -> token);
+			if (tree -> left) 
+				syntaxMKscope(tree -> left,lestcode( CODEscope -> nextLVL));
+			if (tree -> right)
+				syntaxMKscope(tree -> right,lestcode( CODEscope -> nextLVL));
+				scope--;
+				return;	
+			break;
+		case "}":
+			break;
+		case "":
+			break;
+		case "(":
+			printf("(");
+			break;
+		case ")":
+			printf(")\n");
+			break;
+		case ",":
+			printf(",");
+			break;
+		case ";":
+			printf(";\n");
+			break;
+		case "solovar":
+			findvar(tree -> left,CODEscope);
+			break;
+		default:
+			printf("(%s",tree -> token));
 
 	}
-	else if(strcmp(tree->token, "{") == 0) {
-		push(CODEscope,tree->token);
-		if (tree->left) 
-			syntaxMKscope(tree->left,lestcode( CODEscope->nextLVL));
-		if (tree->right)
-			syntaxMKscope(tree->right,lestcode( CODEscope->nextLVL));
-			scope--;
-			return;		
-	}
-	else if(strcmp(tree->token, "}") == 0) { }
-	else if(strcmp(tree->token, "") == 0);
-	else if(strcmp(tree->token, "(") == 0) printf("(");
-	else if(strcmp(tree->token, ")") == 0) printf(")\n");
-	else if(strcmp(tree->token, ",") == 0) printf(",");
-	else if(strcmp(tree->token, ";") == 0) printf("\n");
-	else if(strcmp(tree->token, "&&") == 0 ||
-			strcmp(tree->token, "/") == 0 || 
-			strcmp(tree->token, "==") == 0 || 
-			strcmp(tree->token, ">") == 0 || 
-			strcmp(tree->token, ">=") == 0 || 
-			strcmp(tree->token, "<") == 0 || 
-			strcmp(tree->token, "<=") == 0 || 
-			strcmp(tree->token, "-") == 0 || 
-			strcmp(tree->token, "!") == 0 || 
-			strcmp(tree->token, "!=") == 0 || 
-			strcmp(tree->token, "||") == 0 || 
-			strcmp(tree->token, "+") == 0 || 
-			strcmp(tree->token, "*") == 0 || 
-			strcmp(tree->token, "&") == 0 || 
-			strcmp(tree->token, "^") == 0 || 
-			strcmp(tree->token, "|") == 0 || 
-			strcmp(tree->token, ",") == 0 ) printf("(%s",tree->token);		
-	else if(strcmp(tree->token, "solovar") == 0 ) findvar(tree->left,CODEscope);
-	
-	if (tree->left) syntaxMKscope(tree->left,CODEscope);
-	
-	if (tree->right) syntaxMKscope(tree->right,CODEscope);
+	if (tree -> left) syntaxMKscope(tree -> left,CODEscope);
+	if (tree -> right) syntaxMKscope(tree -> right,CODEscope);
 }
