@@ -12,3 +12,7 @@ function foo(arg-> x, y, z: int; arg-> f: real): void{
 function goo(): char{
     return 'a';
 }
+
+function main():void{
+    
+}
