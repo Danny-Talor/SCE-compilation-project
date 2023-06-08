@@ -15,7 +15,6 @@ typedef struct node {
 typedef struct Arguments {
 	char * name;
 	char * type;
-	char * len;
 }Arguments;
 
 typedef struct Function {
@@ -31,7 +30,6 @@ typedef struct Varaiables {
 	char *name;
 	char *value;
 	char *type;
-	char * len;
 } Varaiable;
 
 typedef struct code {	
@@ -46,15 +44,16 @@ typedef struct code {
 } code;
 
 char* exprtype(node*, code*);
-Arguments* mkArgs(node*, int *);
+Arguments* makeArgs(node*, int *);
 void addFunc(char* name, Arguments* args,node *returnType,int countArgs, code* CODEscope);
 void addvar(Arguments* args,int,int,code * CODEscope);
-code* mkcode(char *);
+code* makecode(char *);
 node *makeNode(char *token, node *left, node *right);
 void printTree(node *tree, int tab);
 void printTabs(int numOfTabs);
 int yyerror(char *err);
 int yylex();
+int typeFinder(char* token);
 void push(code* from,char*);
 code* mycode=NULL;
 code* lestcode(code * codey);
@@ -383,7 +382,7 @@ int main()
 Arguments * callfuncargs(code * CODEscope,node *tree,int * count)
 {
 	Arguments* arr = NULL ,ar[50];
-	char* type, *len;
+	char* type;
 	while(tree != NULL) {
 		ar[(*count)++].type = exprtype(tree -> left,CODEscope);
 		printf("390 %d %s, ",*count,tree -> left -> token);
@@ -430,8 +429,7 @@ char* findfunc(node * tree,code * CODEscope)
 		printf("but find func with some name but other args\n");
 		exit(1);
 }
-char *findvar(node * tree,code * CODEscope)
-{
+char *findvar(node * tree,code * CODEscope){
 	code*temp=CODEscope;
 	if(strcmp(tree -> token,"solovar") == 0)
 		tree=tree -> left;
@@ -466,9 +464,7 @@ char *findvar(node * tree,code * CODEscope)
 		}
 		temp = temp -> beforeLVL;
 	}
-	printf("ERORR,var %s not find in scope %s in func/proc %s\n ",tree -> token,CODEscope -> name,mycode -> func[mycode -> countfunc-1] -> name);
 	exit(1);
-	
 }
 char * exprtype(node * tree,code* CODEscope){
 	char* msg = (char*)malloc(sizeof(char)*7);
@@ -517,7 +513,6 @@ char * exprtype(node * tree,code* CODEscope){
 				exit(1);
 			}
 		}
-
 		if(strcmp(tree -> token, ">=") == 0 
 		|| strcmp(tree -> token, ">") == 0
 		|| strcmp(tree -> token, "<=") == 0
@@ -629,70 +624,62 @@ char * exprtype(node * tree,code* CODEscope){
 void push(code* from,char* name) {
 	code * point;
 	if(mycode == NULL)
-		mycode = mkcode(name);
+		mycode = makecode(name);
 	else {
 	point = mycode;
 	while(point -> nextLVL != NULL)
 		point=point -> nextLVL;
-	point -> nextLVL = mkcode(name);
+	point -> nextLVL = makecode(name);
 	point -> nextLVL -> beforeLVL = from;
 	}
 }
-code* mkcode(char* name) {	
+code* makecode(char* name) {	
 	code *newlvl = (code*)malloc(sizeof(code));
-	newlvl -> place=++scope;
-	newlvl -> name=name;
-	newlvl -> var=NULL;
-	newlvl -> countvar=0;
-	newlvl -> func=NULL;
-	newlvl -> countfunc=0;
-	newlvl -> nextLVL=NULL;
-	newlvl -> beforeLVL=NULL;
+	newlvl -> place = ++scope;
+	newlvl -> name = name;
+	newlvl -> var = NULL;
+	newlvl -> countvar = 0;
+	newlvl -> func = NULL;
+	newlvl -> countfunc = 0;
+	newlvl -> nextLVL = NULL;
+	newlvl -> beforeLVL = NULL;
 	return newlvl;
 }
 
-void addvar(Arguments * args,int countvars,int isArg,code * CODEscope){
+void addvar(Arguments * args, int countvars, int isArg, code * CODEscope){
 	if(countvars == 0)
-	return;
+		return;
 	Varaiable* temp;
-	code * codey=CODEscope;
-
-	for(int i=0;i<countvars;i++)
-		for(int j=0;j<countvars;j++)
-	if(i != j && strcmp(args[j].name,args[i].name) == 0 )
-	{
-		printf("sorry you can't some vars %s in one declear",args[i].name);
-		code * t=codey -> beforeLVL;
-		while(t -> beforeLVL != NULL && t -> beforeLVL -> countfunc == 0)
-			t=t -> beforeLVL;
-		if(t -> func != NULL)
-		printf(",in func %s\n",t -> func[t -> countfunc-1] -> name);
-			else
-		printf("\n");
-		exit(1);
-	}
-	if(codey -> var == NULL)
-	{ 
-		codey -> var=(Varaiable*) malloc(sizeof(Varaiable)*countvars);
-	}
-	else
-	{
-		temp=codey -> var;
-		codey -> var=(Varaiable*) malloc(sizeof(Varaiable)*(codey -> countvar+countvars));
-		for(int i=0;i<codey -> countvar;i++)
-		{
-			for(int j=0;j<countvars;j++)
-			{
-				if(strcmp(temp[i].name,args[j].name) == 0 )
-				{
-					printf("sorry you can't some var %s in some scope",temp[i].name);
-					code * t=codey -> beforeLVL;
-					while(t -> beforeLVL != NULL && t -> beforeLVL -> countfunc == 0)
-						t=t -> beforeLVL;
-					if(t -> func != NULL)
-					printf(",in func %s\n",t -> func[t -> countfunc-1] -> name);
-					else
+	code* codey = CODEscope;
+	for(int i = 0; i < countvars; i++)
+		for(int j = 0; j < countvars; j++)
+			if(i != j && strcmp(args[j].name, args[i].name) == 0 ) {
+				printf("sorry you can not have same named variables %s in one declaration\n", args[i].name);
+				code* t = codey -> beforeLVL;
+				while(t -> beforeLVL != NULL && t -> beforeLVL -> countfunc == 0)
+					t = t -> beforeLVL;
+				if(t -> func != NULL)
+					printf(",in func %s\n",t -> func[t -> countfunc - 1] -> name);
+				else
 					printf("\n");
+				exit(1);
+			}
+	if(codey -> var == NULL)
+		codey -> var=(Varaiable*) malloc(sizeof(Varaiable)*countvars);
+	else {
+		temp=codey -> var;
+		codey -> var=(Varaiable*) malloc(sizeof(Varaiable)*(codey -> countvar + countvars));
+		for(int i = 0; i < codey -> countvar; i++) {
+			for(int j = 0; j < countvars; j++) {
+				if(strcmp(temp[i].name,args[j].name) == 0 ) {
+					printf("sorry you can not have same named variables %s in the same scope",temp[i].name);
+					code* t = codey -> beforeLVL;
+					while(t -> beforeLVL != NULL && t -> beforeLVL -> countfunc == 0)
+						t = t -> beforeLVL;
+					if(t -> func != NULL)
+						printf(",in func %s\n", t -> func[t -> countfunc-1] -> name);
+					else
+						printf("\n");
 					exit(1);
 				}
 			}
@@ -700,141 +687,97 @@ void addvar(Arguments * args,int countvars,int isArg,code * CODEscope){
 		}
 	}
 	for(int j = 0; j < countvars; j++) {
-		codey -> var[codey -> countvar].name=args[j].name;
-		codey -> var[codey -> countvar].value=NULL;
-		codey -> var[codey -> countvar].isArg=isArg;
-		codey -> var[codey -> countvar].len=args[j].len;
-		codey -> var[(codey -> countvar)++].type=args[j].type;
+		codey -> var[codey -> countvar].name = args[j].name;
+		codey -> var[codey -> countvar].value = NULL;
+		codey -> var[codey -> countvar].isArg = isArg;
+		codey -> var[(codey -> countvar)++].type = args[j].type;
 	}
-	printf("L718 vars in scope %s \n",codey -> name);
+	printf("L718 vars in scope %s \n", codey -> name);
 	for(int i = 0; i < codey -> countvar; i++)
 		printf("%s %s,", codey -> var[i].name, codey -> var[i].type);
 	printf("\nend vars scope %d\n", codey -> place);
 }
-
-void addFunc(char * name,Arguments * args,node *returnType,int countArgs,code * CODEscope) {
+ 
+void addFunc(char* name, Arguments* args, node* returnType, int countArgs, code* CODEscope) {
 	Function** temp;
-	code * codey=CODEscope;
-	for(int i=0;i<countArgs;i++)
-		for(int j=0;j<countArgs;j++)
-			if(i != j && strcmp(args[j].name,args[i].name) == 0 ) {
-				printf("sorry you can't some Arguments %s in func %s\n",args[i].name,name);
+	code* codey = CODEscope;
+	for(int i = 0; i < countArgs; i++)
+		for(int j = 0; j < countArgs; j++)
+			if(i != j && strcmp(args[j].name, args[i].name) == 0 ) {
+				printf("Sorry you can't put several arguments %s in the same function %s\n", args[i].name, name);
 				exit(1);
 			}
 	if(codey -> func == NULL) 
 		codey -> func=(Function**) malloc(sizeof(Function*));
 	else {
 		temp=codey -> func;
-		codey -> func=(Function**) malloc(sizeof(Function*)*(codey -> countfunc+1));
-		for(int i=0;i<codey -> countfunc;i++) {
-			if(strcmp(temp[i] -> name,name) == 0 ) {
-				printf("sorry you can't some func %s in some scope \n",temp[i] -> name);
+		codey -> func = (Function**)malloc(sizeof(Function*) * (codey -> countfunc + 1));
+		for(int i = 0; i < codey -> countfunc; i++) {
+			if(strcmp(temp[i] -> name, name) == 0 ) {
+				printf("Sorry you can't put several arguments %s in the same scope \n",temp[i] -> name);
 				exit(1);
 			}
 			codey -> func[i]=temp[i];
 		}
 	}
-	codey -> func[codey -> countfunc]=(Function*) malloc(sizeof(Function));
+	codey -> func[codey -> countfunc] = (Function*)malloc(sizeof(Function));
 	codey -> func[codey -> countfunc] -> name=name;
 	codey -> func[codey -> countfunc] -> args=args;
 	if(returnType == NULL)
-		codey -> func[codey -> countfunc] -> returnType=NULL;
+		codey -> func[codey -> countfunc] -> returnType = NULL;
 	else {
-		if(strcmp(returnType -> token,"STRING") == 0) {
-			printf("ERORR,return type func %s cant be string\n",name);
+		if(strcmp(returnType -> token, "STRING") == 0) {
+			printf("ERORR, return type in function %s can not be a string \n", name);
 			exit(1);
 		}
-		codey -> func[codey -> countfunc] -> returnType=returnType -> token;
+		codey -> func[codey -> countfunc] -> returnType = returnType -> token;
 	}
 	codey -> func[codey -> countfunc] -> countArgs = countArgs;
 	codey -> func[codey -> countfunc] -> findreturn = false;
 	++(codey -> countfunc); 
 
 	printf("L772 start %s in scope %d\n", name, codey -> place);
-	for(int i=0;i<countArgs;i++)
-		printf("%s %s,", codey -> func[codey -> countfunc-1] -> args[i].name,codey -> func[codey -> countfunc-1] -> args[i].type);
+	for(int i = 0; i < countArgs; i++)
+		printf("%s %s,", codey -> func[codey -> countfunc-1] -> args[i].name, codey -> func[codey -> countfunc-1] -> args[i].type);
 	printf("end %s\n", name);
 }
 
-Arguments * mkArgs(node *tree, int *count){
-	Arguments  *arr = NULL;
+int typeFinder(char* token){
+	if(strcmp(token, "INT") == 0) return 0;
+	if(strcmp(token, "REAL") == 0) return 0;
+	if(strcmp(token, "BOOL") == 0) return 0;
+	if(strcmp(token, "STRING") == 0) return 0;
+	return 1;
+}
+
+Arguments* makeArgs(node *tree, int *count){
+	Arguments *arr = NULL;
 	Arguments ar[50];
 	char* type;
-	char* len;
-	printf("\033[0;31m"); //Set the text to the color red
-	printTree(tree,printlevel);
-	printf("\033[0m"); //Resets the text to default color
 	if(tree != NULL) {
-		node* temp = tree;
-		node* temp1 = tree;
-		printf("I am the token %s\n",temp1 -> token);
-		printf("------------------\n");
-		printf("I am the token left left %s\n",temp1 -> left -> left -> token);
-		printf("I am the token left right %s\n",temp1 -> left -> right -> token); 
-		printf("------------------\n");
-		printf("I am the token left left right %s\n",temp1 -> left -> left -> right -> token);
-		printf("I am the token left left right right %s\n",temp1 -> left -> left -> right -> right -> token);
-		printf("------------------\n");
-		printf("I am the token left right %s\n",temp1 -> left -> right -> token);
-		printf("I am the token left right left %s\n",temp1 -> left -> right -> left -> token);
-		printf("I am the token left right left right %s\n",temp1 -> left -> right -> left -> right -> token);
-		int ass = strcmp(temp -> token, "VAR");
-		type = temp -> left -> token;
-		temp1 = temp1 -> left;
-		do {
-			if(strcmp(temp -> token, "VAR") == 0) {
-				printf("I am the ASS: %d\n", ass);
-				temp = temp1 -> left;
-				temp1 = temp1 -> right;
-				if(strcmp(temp -> token, "(") == 0 || strcmp(temp -> token, "VAR") == 0) {
-					type = temp -> right -> token;
-					if(temp -> left -> left != NULL)
-						len = temp -> left -> left -> left -> token;
-					node * treee;
-					treee = temp -> left ;
-					do {
-						ar[*count].name = treee -> token;
-						ar[*count].type = type;
-						ar[*count].len = len;
-						(*count)++;
-						if(treee -> left == NULL)
-							treee = NULL;
-						else
-							treee = treee -> left -> left;
-					} while(treee != NULL);
-				}
-			}
-		} while(strcmp(temp1 -> token, "(") != 0 && strcmp(temp -> token, TYPE) != 0);
-		temp = temp1;
-		if(strcmp(temp -> token, "(") == 0 || strcmp(temp -> token, "VAR") == 0) {
-			type = temp -> left -> token;
-			node * treee;
-			if(strcmp(temp -> token, "VAR") == 0)
-				treee = temp -> right;
-			else
-				treee=temp -> right -> left;
-			if(temp -> left -> left != NULL)
-				len=temp -> left -> left -> left -> token;
-			do{
-				ar[*count].name = treee -> token;
-				ar[*count].type = type;
-				ar[*count].len = len;
-				(*count)++;
-				if(treee -> left == NULL)
-					treee = NULL;
-				else
-					treee = treee -> left -> left;
-			} while(treee != NULL);
-		}
-		arr = (Arguments*)malloc(sizeof(Arguments) * (*count));
-		for(int i = 0; i < *count; i++) {
-			arr[i].name = ar[i].name;
-			arr[i].type = ar[i].type;
-			printf("%s %s,", arr[i].name, arr[i].type);
-		}
-		printf("\n");
-	}
-	return arr;
+		node* VarName = tree -> left -> left;
+		node* VarType = tree -> left;
+		type = VarType -> token;
+		if(typeFinder(VarName->token) == 0) {
+            do {
+                ar[*count].name = VarName -> token;
+                ar[*count].type = type;
+                (*count)++;
+                if(VarName -> right == NULL)
+                    VarName = NULL;
+                else
+                    VarName = VarName -> right;
+            } while(VarName != NULL);
+        }
+        arr = (Arguments*)malloc(sizeof(Arguments) * (*count));
+        for(int i = 0; i < *count; i++) {
+            arr[i].name = strdup(ar[i].name); // Copy the string to prevent pointing to temporary variables
+            arr[i].type = strdup(ar[i].type); // Copy the string to prevent pointing to temporary variables
+            printf("%s %s,", arr[i].name, arr[i].type);
+        }
+        printf("\n");
+    }
+    return arr;
 }
 
 node *makeNode(char *token, node *left, node *right) {
@@ -876,10 +819,10 @@ void printTabs(int numOfTabs) {
 }
 
 int yyerror(char *e) {
-	int yydebug = 1; 
+	int yydebug = 1;
 	fflush(stdout);
-	fprintf(stderr,"Error %s at line %d\n" , e, yylineno);
-	fprintf(stderr, "does not accept '%s'\n", yytext);
+	fprintf(stderr,"%s at line %d " , e, yylineno);
+	fprintf(stderr, "- invalid character '%s'\n", yytext);
 	return 0;
 }
 
@@ -887,24 +830,24 @@ code* lestcode(code * codey){
 	code * CODEscope=codey;
 	if(CODEscope != NULL)
 	while(CODEscope -> nextLVL != NULL)
-		CODEscope=CODEscope -> nextLVL;
+		CODEscope = CODEscope -> nextLVL;
 	return CODEscope;
 }
 
-void syntaxMKscope(node *tree,code * CODEscope){
+void syntaxMKscope(node* tree,code* CODEscope){
 	if(strcmp(tree -> token, "=") == 0 ) {
 		if(!(strcmp(exprtype(tree -> right,CODEscope),"NULL") == 0
 		&& (strcmp(exprtype(tree -> left,CODEscope),"REAL_PTR") == 0
 		||strcmp(exprtype(tree -> left,CODEscope),"INT_PTR") == 0
 		||strcmp(exprtype(tree -> left,CODEscope),"CHAR_PTR") == 0)))
 		if(strcmp(exprtype(tree -> left,CODEscope),exprtype(tree -> right,CODEscope)) != 0) {
-			printf("ERORR, you can't do = between %s and %s in scope %s in func/proc %s\n",exprtype(tree -> left,CODEscope),exprtype(tree -> right,CODEscope),CODEscope -> name,mycode -> func[mycode -> countfunc-1] -> name);
+			printf("ERORR: %s = %s can not be evaluated in scope %s in the fuction %s\n",exprtype(tree -> left,CODEscope),exprtype(tree -> right,CODEscope),CODEscope -> name,mycode -> func[mycode -> countfunc-1] -> name);
 			exit(1);
 		}
 	}
 	else if(strcmp(tree -> token, "VAR") == 0) {
 		int countvar = 0;
-		Arguments *var = mkArgs(tree, &countvar);
+		Arguments *var = makeArgs(tree, &countvar);
 		addvar(var, countvar, 0, CODEscope);
 	}
 	else if(strcmp(tree -> token, "IF") == 0) {
@@ -925,7 +868,7 @@ void syntaxMKscope(node *tree,code * CODEscope){
 	}
 	else if(strcmp(tree -> token, "while") == 0) {
 		if(strcmp(exprtype(tree -> left -> left,CODEscope),"BOOL") != 0) {
-			printf("ERORR, in while expr most be type boolean\n");
+			printf("ERROR:For expression must evaluate to boolean\n");
 			exit(1);
 		}
 		if(strcmp(tree -> right -> token,"{") != 0) {
@@ -940,7 +883,7 @@ void syntaxMKscope(node *tree,code * CODEscope){
 	}
 	else if(strcmp(tree -> token, "for") == 0) {
 	    if(strcmp(exprtype(tree -> left -> left -> right,CODEscope),"BOOL") != 0) {
-			printf("ERORR, in for expr most be type boolean\n");
+			printf("ERROR:For expression must evaluate to boolean\n");
 			exit(1);
 		}
 		syntaxMKscope(tree -> left -> left -> left,CODEscope);
@@ -954,26 +897,26 @@ void syntaxMKscope(node *tree,code * CODEscope){
 		}
 	}
 	else if(strcmp(tree -> token, "FUNCTION") == 0 ) {
-        int count=0;
-		Arguments * arg = mkArgs(tree -> left -> right->left, &count);
-		addFunc(tree -> left -> token, arg, tree -> left -> right -> right -> left, count, CODEscope);
-		push(CODEscope,tree -> token);
-		addvar(arg,count,1,lestcode(CODEscope));
-		if (tree -> left) syntaxMKscope(tree -> left,lestcode( CODEscope -> nextLVL));
-		if (tree -> right) syntaxMKscope(tree -> right,lestcode( CODEscope -> nextLVL));
+        int count = 0;
+		Arguments* arg = makeArgs(tree -> left -> right -> left, &count);
+		addFunc(tree -> left -> token, arg, tree -> left -> right -> right, count, CODEscope);
+		push(CODEscope, tree -> token);
+		addvar(arg, count, 1, lestcode(CODEscope));
+		if (tree -> left) syntaxMKscope(tree -> left, lestcode( CODEscope -> nextLVL));
+		if (tree -> right) syntaxMKscope(tree -> right, lestcode( CODEscope -> nextLVL));
 		if(CODEscope -> func[CODEscope -> countfunc-1] -> findreturn == false) {
-			printf("ERORR,in func %s not find return\n",tree -> left -> token);
+			printf("ERROR:At function %s - did not find return!\n", tree -> left -> token);
 			exit(1);
 		}
         scope--;		
 		return;
 	}
     else if(strcmp(tree -> token, "PROC") == 0) {
-        int count=0;
-		Arguments * arg=mkArgs(tree -> right -> left,&count);
-		addFunc(tree -> left -> token,arg,NULL,count,CODEscope);
+        int count = 0;
+		Arguments* arg = makeArgs(tree -> left -> right -> left, &count);
+		addFunc(tree -> left -> token, arg, NULL, count, CODEscope);
 		push(CODEscope,tree -> token);
-		addvar(arg,count,1,lestcode(CODEscope));
+		addvar(arg, count, 1, lestcode(CODEscope));
 		if (tree -> left) 
 			syntaxMKscope(tree -> left,lestcode( CODEscope -> nextLVL));
 		if (tree -> right)
@@ -998,11 +941,11 @@ void syntaxMKscope(node *tree,code * CODEscope){
 	else if(strcmp(tree -> token, "ARGS") == 0) { }
     else if(strcmp(tree -> token, "Main") == 0) {
 		if(flagMain == true) {
-			printf("Main needs to be one anad only and not inside a func/proc\n");
+			printf("ERROR:Main can not be inside a function/procedure\n");
 			exit(1);
 		}
-		flagMain=true;
-		addFunc(tree -> token,NULL,NULL,0,CODEscope);
+		flagMain = true;
+		addFunc(tree -> token, NULL, NULL, 0, CODEscope);
 		push(CODEscope,tree -> token);
 		if (tree -> left) 
 			syntaxMKscope(tree -> left,lestcode( CODEscope -> nextLVL));
@@ -1014,7 +957,7 @@ void syntaxMKscope(node *tree,code * CODEscope){
     }       
 	else if(strcmp(tree -> token, "IF-ELSE") == 0) {
 		if(strcmp(exprtype(tree -> left -> left,CODEscope),"BOOL") != 0) {
-			printf("ERORR, in if expr most be type boolean\n");
+			printf("ERROR:If statement must evaluate to boolean\n");
 			exit(1);
 		}
 		if(strcmp(tree -> right -> left -> token,"{") != 0) {
@@ -1028,33 +971,32 @@ void syntaxMKscope(node *tree,code * CODEscope){
 		}	
 	}
 	else if(strcmp(tree -> token, "RET") == 0) {
-		code * temp= CODEscope;
-		int flag=true;
-		while(strcmp(temp -> name,"FUNCTION") != 0&&strcmp(temp -> name,"PROC") != 0&&strcmp(temp -> name,"CODE") != 0) {
-			temp=temp -> beforeLVL;
-			flag=false;
+		code* temp = CODEscope;
+		int flag = true;
+		while(strcmp(temp -> name,"FUNCTION") != 0 && strcmp(temp -> name, "PROC") != 0 && strcmp(temp -> name,"CODE") != 0) {
+			temp = temp -> beforeLVL;
+			flag = false;
 		}
 		if(flag == false) {
-			if(strcmp(exprtype(tree -> left,CODEscope),temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> returnType))
-			{
-			printf("ERORR,return no some type in func %s \n",temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
+			if(strcmp(exprtype(tree -> left,CODEscope),temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> returnType)) {
+			printf("ERROR:At function %s - function type and return type do not match.\n",temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
 			printf("%s ,%s %s\n",exprtype(tree -> left,CODEscope),temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> returnType,temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
 			exit(1);
 			}
 		}
 		else{
-			if(temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> returnType != NULL) {
+			if(temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc - 1] -> returnType != NULL) {
 				if(0 == strcmp(exprtype(tree -> left,CODEscope),temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> returnType)){
-					temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> findreturn=true;
+					temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc - 1] -> findreturn = true;
 				}
 				else {
-					printf("ERORR,return no some type in func %s \n",temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
+					printf("ERROR:At procedure %s - can't have a return.\n",temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
 					printf("%s ,%s %s\n",exprtype(tree -> left,CODEscope),temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> returnType,temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
 					exit(1);
 				}
 			}
 			else {
-				printf("ERORR,return cant be in proc %s\n",temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
+				printf("ERROR:At procedure %s - can't have a return.\n",temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
 				exit(1);
 			}  
 		}  

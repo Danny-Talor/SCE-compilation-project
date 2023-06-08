@@ -85,7 +85,6 @@ typedef struct node {
 typedef struct Arguments {
 	char * name;
 	char * type;
-	char * len;
 }Arguments;
 
 typedef struct Function {
@@ -101,7 +100,6 @@ typedef struct Varaiables {
 	char *name;
 	char *value;
 	char *type;
-	char * len;
 } Varaiable;
 
 typedef struct code {	
@@ -116,15 +114,16 @@ typedef struct code {
 } code;
 
 char* exprtype(node*, code*);
-Arguments* mkArgs(node*, int *);
+Arguments* makeArgs(node*, int *);
 void addFunc(char* name, Arguments* args,node *returnType,int countArgs, code* CODEscope);
 void addvar(Arguments* args,int,int,code * CODEscope);
-code* mkcode(char *);
+code* makecode(char *);
 node *makeNode(char *token, node *left, node *right);
 void printTree(node *tree, int tab);
 void printTabs(int numOfTabs);
 int yyerror(char *err);
 int yylex();
+int typeFinder(char* token);
 void push(code* from,char*);
 code* mycode=NULL;
 code* lestcode(code * codey);
@@ -137,7 +136,7 @@ Arguments * callfuncargs(code *,node *tree,int * count);
 int printlevel=-1;
 int flagMain=false;
 
-#line 141 "y.tab.c"
+#line 140 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -284,12 +283,12 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 72 "part1.y"
+#line 71 "part1.y"
 
     char *string;
     struct node *node;
 
-#line 293 "y.tab.c"
+#line 292 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -798,22 +797,22 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   180,   180,   182,   184,   185,   186,   187,   188,   189,
-     190,   192,   194,   196,   198,   199,   200,   201,   202,   204,
-     205,   206,   207,   208,   209,   210,   212,   213,   214,   215,
-     216,   218,   219,   220,   221,   222,   223,   224,   226,   228,
-     229,   230,   231,   233,   234,   235,   237,   238,   239,   240,
-     242,   243,   244,   245,   246,   248,   249,   251,   252,   254,
-     255,   256,   257,   258,   259,   260,   262,   263,   264,   265,
-     266,   267,   268,   269,   271,   272,   273,   274,   276,   277,
-     278,   280,   281,   282,   283,   284,   285,   286,   288,   289,
-     290,   292,   293,   295,   296,   298,   300,   302,   304,   306,
-     308,   310,   311,   312,   313,   314,   315,   316,   318,   319,
-     320,   321,   323,   324,   325,   326,   327,   328,   329,   330,
-     331,   332,   333,   334,   335,   336,   337,   338,   339,   341,
-     342,   343,   344,   346,   347,   348,   349,   350,   351,   352,
-     353,   355,   356,   358,   359,   361,   362,   363,   365,   366,
-     367
+       0,   179,   179,   181,   183,   184,   185,   186,   187,   188,
+     189,   191,   193,   195,   197,   198,   199,   200,   201,   203,
+     204,   205,   206,   207,   208,   209,   211,   212,   213,   214,
+     215,   217,   218,   219,   220,   221,   222,   223,   225,   227,
+     228,   229,   230,   232,   233,   234,   236,   237,   238,   239,
+     241,   242,   243,   244,   245,   247,   248,   250,   251,   253,
+     254,   255,   256,   257,   258,   259,   261,   262,   263,   264,
+     265,   266,   267,   268,   270,   271,   272,   273,   275,   276,
+     277,   279,   280,   281,   282,   283,   284,   285,   287,   288,
+     289,   291,   292,   294,   295,   297,   299,   301,   303,   305,
+     307,   309,   310,   311,   312,   313,   314,   315,   317,   318,
+     319,   320,   322,   323,   324,   325,   326,   327,   328,   329,
+     330,   331,   332,   333,   334,   335,   336,   337,   338,   340,
+     341,   342,   343,   345,   346,   347,   348,   349,   350,   351,
+     352,   354,   355,   357,   358,   360,   361,   362,   364,   365,
+     366
 };
 #endif
 
@@ -1718,901 +1717,901 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* start: initial  */
-#line 180 "part1.y"
+#line 179 "part1.y"
                { syntaxMKscope((yyvsp[0].node),mycode); }
-#line 1724 "y.tab.c"
+#line 1723 "y.tab.c"
     break;
 
   case 3: /* initial: code  */
-#line 182 "part1.y"
+#line 181 "part1.y"
               { (yyval.node) = makeNode("CODE", (yyvsp[0].node), NULL);}
-#line 1730 "y.tab.c"
+#line 1729 "y.tab.c"
     break;
 
   case 4: /* code: function code  */
-#line 184 "part1.y"
+#line 183 "part1.y"
                     { (yyval.node) = makeNode("FUNCTION",(yyvsp[-1].node), (yyvsp[0].node)); }
-#line 1736 "y.tab.c"
+#line 1735 "y.tab.c"
     break;
 
   case 5: /* code: function  */
-#line 185 "part1.y"
+#line 184 "part1.y"
                { (yyval.node) = makeNode("FUNCTION",(yyvsp[0].node), NULL); }
-#line 1742 "y.tab.c"
+#line 1741 "y.tab.c"
     break;
 
   case 6: /* code: procedure code  */
-#line 186 "part1.y"
+#line 185 "part1.y"
                     { (yyval.node) = makeNode("PROC",(yyvsp[-1].node), (yyvsp[0].node)); }
-#line 1748 "y.tab.c"
+#line 1747 "y.tab.c"
     break;
 
   case 7: /* code: procedure  */
-#line 187 "part1.y"
+#line 186 "part1.y"
                 { (yyval.node) = makeNode("PROC",(yyvsp[0].node), NULL); }
-#line 1754 "y.tab.c"
+#line 1753 "y.tab.c"
     break;
 
   case 8: /* code: main  */
-#line 188 "part1.y"
+#line 187 "part1.y"
                { (yyval.node) = makeNode("Main",(yyvsp[0].node), NULL); }
-#line 1760 "y.tab.c"
+#line 1759 "y.tab.c"
     break;
 
   case 9: /* code: main code  */
-#line 189 "part1.y"
+#line 188 "part1.y"
                     { (yyval.node) = makeNode("Main",(yyvsp[-1].node), (yyvsp[0].node)); }
-#line 1766 "y.tab.c"
+#line 1765 "y.tab.c"
     break;
 
   case 10: /* code: %empty  */
-#line 190 "part1.y"
+#line 189 "part1.y"
           {(yyval.node)=NULL;}
-#line 1772 "y.tab.c"
+#line 1771 "y.tab.c"
     break;
 
   case 11: /* main: FUNC MAIN '(' ')' ':' VOID '{' body_proc '}'  */
-#line 192 "part1.y"
+#line 191 "part1.y"
                                                    {(yyval.node) = makeNode("ARGS NONE",NULL, makeNode("RET VOID", NULL,(yyvsp[-1].node))); }
-#line 1778 "y.tab.c"
+#line 1777 "y.tab.c"
     break;
 
   case 12: /* function: FUNC ID '(' args ')' ':' type '{' body '}'  */
-#line 194 "part1.y"
+#line 193 "part1.y"
                                                      {(yyval.node) = makeNode((yyvsp[-8].string), NULL, makeNode("ARGS", makeNode("VAR", (yyvsp[-6].node), NULL) , makeNode((yyvsp[-3].string), NULL, (yyvsp[-1].node)))); }
-#line 1784 "y.tab.c"
+#line 1783 "y.tab.c"
     break;
 
   case 13: /* procedure: FUNC ID '(' args ')' ':' VOID '{' body_proc '}'  */
-#line 196 "part1.y"
+#line 195 "part1.y"
                                                            {(yyval.node) = makeNode((yyvsp[-8].string),NULL, makeNode("ARGS", (yyvsp[-6].node),makeNode("RET VOID", NULL,(yyvsp[-1].node)))); }
-#line 1790 "y.tab.c"
+#line 1789 "y.tab.c"
     break;
 
   case 14: /* args: args_Id ':' type  */
-#line 198 "part1.y"
+#line 197 "part1.y"
                        { (yyval.node) = makeNode((yyvsp[0].string), (yyvsp[-2].node), NULL); }
-#line 1796 "y.tab.c"
+#line 1795 "y.tab.c"
     break;
 
   case 15: /* args: args ',' args_Id type  */
-#line 199 "part1.y"
+#line 198 "part1.y"
                             { (yyval.node) = makeNode((yyvsp[0].string), (yyvsp[-1].node), (yyvsp[-3].node)); }
-#line 1802 "y.tab.c"
+#line 1801 "y.tab.c"
     break;
 
   case 16: /* args: FUNCARGS args_Id type  */
-#line 200 "part1.y"
+#line 199 "part1.y"
                             { (yyval.node) = makeNode((yyvsp[0].string), (yyvsp[-1].node), NULL); }
-#line 1808 "y.tab.c"
+#line 1807 "y.tab.c"
     break;
 
   case 17: /* args: FUNCARGS args_Id type ';' args  */
-#line 201 "part1.y"
+#line 200 "part1.y"
                                      { (yyval.node) = makeNode((yyvsp[-2].string), (yyvsp[-3].node), (yyvsp[0].node)); }
-#line 1814 "y.tab.c"
+#line 1813 "y.tab.c"
     break;
 
   case 18: /* args: %empty  */
-#line 202 "part1.y"
+#line 201 "part1.y"
       { (yyval.node) = NULL; }
-#line 1820 "y.tab.c"
+#line 1819 "y.tab.c"
     break;
 
   case 19: /* args_Id: ID  */
-#line 204 "part1.y"
+#line 203 "part1.y"
             { (yyval.node) = makeNode((yyvsp[0].string), NULL, NULL); }
-#line 1826 "y.tab.c"
+#line 1825 "y.tab.c"
     break;
 
   case 20: /* args_Id: ID ':'  */
-#line 205 "part1.y"
+#line 204 "part1.y"
                 { (yyval.node) = makeNode((yyvsp[-1].string), NULL,NULL); }
-#line 1832 "y.tab.c"
+#line 1831 "y.tab.c"
     break;
 
   case 21: /* args_Id: ID ',' args_Id  */
-#line 206 "part1.y"
+#line 205 "part1.y"
                         { (yyval.node) = makeNode((yyvsp[-2].string), NULL, (yyvsp[0].node)); }
-#line 1838 "y.tab.c"
+#line 1837 "y.tab.c"
     break;
 
   case 22: /* args_Id: FUNCARGS ID  */
-#line 207 "part1.y"
+#line 206 "part1.y"
                      { (yyval.node) = makeNode((yyvsp[0].string), NULL, NULL); }
-#line 1844 "y.tab.c"
+#line 1843 "y.tab.c"
     break;
 
   case 23: /* args_Id: FUNCARGS ID ',' args_Id  */
-#line 208 "part1.y"
+#line 207 "part1.y"
                                  { (yyval.node) = makeNode((yyvsp[-2].string), NULL, (yyvsp[0].node)); }
-#line 1850 "y.tab.c"
+#line 1849 "y.tab.c"
     break;
 
   case 24: /* args_Id: FUNCARGS ID ':'  */
-#line 209 "part1.y"
+#line 208 "part1.y"
                          { (yyval.node) = makeNode((yyvsp[-1].string), NULL, NULL); (yyval.node) -> left = makeNode((yyvsp[-1].string), NULL, NULL); }
-#line 1856 "y.tab.c"
+#line 1855 "y.tab.c"
     break;
 
   case 25: /* args_Id: %empty  */
-#line 210 "part1.y"
+#line 209 "part1.y"
          { (yyval.node) = NULL; }
-#line 1862 "y.tab.c"
+#line 1861 "y.tab.c"
     break;
 
   case 26: /* string_Id: ID '[' expression ']' ';'  */
-#line 212 "part1.y"
+#line 211 "part1.y"
                                      { (yyval.node) = makeNode((yyvsp[-4].string), makeNode("[]", NULL,(yyvsp[-2].node)), NULL); }
-#line 1868 "y.tab.c"
+#line 1867 "y.tab.c"
     break;
 
   case 27: /* string_Id: assignment ':'  */
-#line 213 "part1.y"
+#line 212 "part1.y"
                          { (yyval.node) = (yyvsp[-1].node); }
-#line 1874 "y.tab.c"
+#line 1873 "y.tab.c"
     break;
 
   case 28: /* string_Id: assignment ',' string_Id  */
-#line 214 "part1.y"
+#line 213 "part1.y"
                                     { (yyvsp[-2].node) -> right = (yyvsp[0].node);  (yyval.node) = (yyvsp[-2].node); }
-#line 1880 "y.tab.c"
+#line 1879 "y.tab.c"
     break;
 
   case 29: /* string_Id: FUNCARGS ID '[' expression ']' ',' string_Id  */
-#line 215 "part1.y"
+#line 214 "part1.y"
                                                          { (yyval.node) = makeNode((yyvsp[-5].string), makeNode("[]", NULL,(yyvsp[-3].node)), (yyvsp[0].node)); }
-#line 1886 "y.tab.c"
+#line 1885 "y.tab.c"
     break;
 
   case 30: /* string_Id: FUNCARGS ID '[' expression ']' ':'  */
-#line 216 "part1.y"
+#line 215 "part1.y"
                                               {(yyval.node) = makeNode((yyvsp[-4].string), makeNode("[]", NULL,(yyvsp[-2].node)), NULL); }
-#line 1892 "y.tab.c"
+#line 1891 "y.tab.c"
     break;
 
   case 31: /* type: BOOL  */
-#line 218 "part1.y"
+#line 217 "part1.y"
            { (yyval.string) = "BOOL"; }
-#line 1898 "y.tab.c"
+#line 1897 "y.tab.c"
     break;
 
   case 32: /* type: CHAR  */
-#line 219 "part1.y"
+#line 218 "part1.y"
            { (yyval.string) = "CHAR"; }
-#line 1904 "y.tab.c"
+#line 1903 "y.tab.c"
     break;
 
   case 33: /* type: INT  */
-#line 220 "part1.y"
+#line 219 "part1.y"
           { (yyval.string) = "INT"; }
-#line 1910 "y.tab.c"
+#line 1909 "y.tab.c"
     break;
 
   case 34: /* type: REAL  */
-#line 221 "part1.y"
+#line 220 "part1.y"
            { (yyval.string) = "REAL"; }
-#line 1916 "y.tab.c"
+#line 1915 "y.tab.c"
     break;
 
   case 35: /* type: INTP  */
-#line 222 "part1.y"
+#line 221 "part1.y"
            { (yyval.string) = "INT_PTR"; }
-#line 1922 "y.tab.c"
+#line 1921 "y.tab.c"
     break;
 
   case 36: /* type: CHARP  */
-#line 223 "part1.y"
+#line 222 "part1.y"
             { (yyval.string) = "CHAR_PTR"; }
-#line 1928 "y.tab.c"
+#line 1927 "y.tab.c"
     break;
 
   case 37: /* type: REALP  */
-#line 224 "part1.y"
+#line 223 "part1.y"
             { (yyval.string) = "REAL_PTR"; }
-#line 1934 "y.tab.c"
+#line 1933 "y.tab.c"
     break;
 
   case 38: /* string_type: STRING string_Id  */
-#line 226 "part1.y"
+#line 225 "part1.y"
                               { (yyval.node) =(yyvsp[0].node); }
-#line 1940 "y.tab.c"
+#line 1939 "y.tab.c"
     break;
 
   case 39: /* body: declaration nested_statement return_statement  */
-#line 228 "part1.y"
+#line 227 "part1.y"
                                                     { (yyval.node) = makeNode("BODY", makeNode("", (yyvsp[-2].node), (yyvsp[-1].node)),(yyvsp[0].node)); }
-#line 1946 "y.tab.c"
+#line 1945 "y.tab.c"
     break;
 
   case 40: /* body: declaration return_statement  */
-#line 229 "part1.y"
+#line 228 "part1.y"
                                    {(yyval.node) = makeNode("BODY",(yyvsp[-1].node), (yyvsp[0].node)); }
-#line 1952 "y.tab.c"
+#line 1951 "y.tab.c"
     break;
 
   case 41: /* body: nested_statement return_statement  */
-#line 230 "part1.y"
+#line 229 "part1.y"
                                         { (yyval.node) = makeNode("BODY", (yyvsp[-1].node) ,(yyvsp[0].node)); }
-#line 1958 "y.tab.c"
+#line 1957 "y.tab.c"
     break;
 
   case 42: /* body: nested_statement  */
-#line 231 "part1.y"
+#line 230 "part1.y"
                        { (yyval.node) = makeNode("BODY", (yyvsp[0].node) ,NULL); }
-#line 1964 "y.tab.c"
+#line 1963 "y.tab.c"
     break;
 
   case 43: /* body_proc: declaration proc_nested_statement  */
-#line 233 "part1.y"
+#line 232 "part1.y"
                                              { (yyval.node) = makeNode("BODY", makeNode("", (yyvsp[-1].node), (yyvsp[0].node)),NULL); }
-#line 1970 "y.tab.c"
+#line 1969 "y.tab.c"
     break;
 
   case 44: /* body_proc: declaration  */
-#line 234 "part1.y"
+#line 233 "part1.y"
                        {(yyval.node) = makeNode("BODY",(yyvsp[0].node), NULL); }
-#line 1976 "y.tab.c"
+#line 1975 "y.tab.c"
     break;
 
   case 45: /* body_proc: proc_nested_statement  */
-#line 235 "part1.y"
+#line 234 "part1.y"
                                  { (yyval.node) = makeNode("BODY", (yyvsp[0].node) ,NULL); }
-#line 1982 "y.tab.c"
+#line 1981 "y.tab.c"
     break;
 
   case 46: /* declaration: function declaration  */
-#line 237 "part1.y"
+#line 236 "part1.y"
                                   { (yyval.node) = makeNode("FUNCTION", (yyvsp[-1].node), (yyvsp[0].node)); }
-#line 1988 "y.tab.c"
+#line 1987 "y.tab.c"
     break;
 
   case 47: /* declaration: string_type declaration  */
-#line 238 "part1.y"
+#line 237 "part1.y"
                                      {(yyval.node) = makeNode("STRING",(yyvsp[-1].node),(yyvsp[0].node));}
-#line 1994 "y.tab.c"
+#line 1993 "y.tab.c"
     break;
 
   case 48: /* declaration: VAR long_declaration ':' type ';' declaration  */
-#line 239 "part1.y"
+#line 238 "part1.y"
                                                            { (yyval.node) = makeNode("VAR",makeNode((yyvsp[-2].string),(yyvsp[-4].node),(yyvsp[0].node)),NULL);}
-#line 2000 "y.tab.c"
+#line 1999 "y.tab.c"
     break;
 
   case 49: /* declaration: %empty  */
-#line 240 "part1.y"
+#line 239 "part1.y"
              { (yyval.node) = NULL; }
-#line 2006 "y.tab.c"
+#line 2005 "y.tab.c"
     break;
 
   case 50: /* long_declaration: assignment ',' long_declaration  */
-#line 242 "part1.y"
+#line 241 "part1.y"
                                                   {(yyvsp[-2].node) -> right=(yyvsp[0].node);(yyval.node)=(yyvsp[-2].node);}
-#line 2012 "y.tab.c"
+#line 2011 "y.tab.c"
     break;
 
   case 51: /* long_declaration: ID ',' long_declaration  */
-#line 243 "part1.y"
+#line 242 "part1.y"
                                           {(yyval.node) = makeNode((yyvsp[-2].string),NULL,(yyvsp[0].node));}
-#line 2018 "y.tab.c"
+#line 2017 "y.tab.c"
     break;
 
   case 52: /* long_declaration: assignment  */
-#line 244 "part1.y"
+#line 243 "part1.y"
                               {(yyval.node)=(yyvsp[0].node);}
-#line 2024 "y.tab.c"
+#line 2023 "y.tab.c"
     break;
 
   case 53: /* long_declaration: ID  */
-#line 245 "part1.y"
+#line 244 "part1.y"
                       { (yyval.node) = makeNode((yyvsp[0].string), NULL, NULL); }
-#line 2030 "y.tab.c"
+#line 2029 "y.tab.c"
     break;
 
   case 54: /* long_declaration: %empty  */
-#line 246 "part1.y"
+#line 245 "part1.y"
                   { (yyval.node) = NULL; }
-#line 2036 "y.tab.c"
+#line 2035 "y.tab.c"
     break;
 
   case 55: /* nested_statement: statement  */
-#line 248 "part1.y"
+#line 247 "part1.y"
                             { (yyval.node) = (yyvsp[0].node); }
-#line 2042 "y.tab.c"
+#line 2041 "y.tab.c"
     break;
 
   case 56: /* nested_statement: statement nested_statement  */
-#line 249 "part1.y"
+#line 248 "part1.y"
                                              { (yyvsp[-1].node) -> right = (yyvsp[0].node); (yyval.node) = (yyvsp[-1].node); }
-#line 2048 "y.tab.c"
+#line 2047 "y.tab.c"
     break;
 
   case 57: /* proc_nested_statement: proc_statement  */
-#line 251 "part1.y"
+#line 250 "part1.y"
                                       { (yyval.node) = (yyvsp[0].node); }
-#line 2054 "y.tab.c"
+#line 2053 "y.tab.c"
     break;
 
   case 58: /* proc_nested_statement: proc_statement proc_nested_statement  */
-#line 252 "part1.y"
+#line 251 "part1.y"
                                                             { (yyvsp[-1].node) -> right = (yyvsp[0].node); (yyval.node) = (yyvsp[-1].node); }
-#line 2060 "y.tab.c"
+#line 2059 "y.tab.c"
     break;
 
   case 59: /* proc_statement: assignment ';'  */
-#line 254 "part1.y"
+#line 253 "part1.y"
                                {(yyval.node) = (yyvsp[-1].node);}
-#line 2066 "y.tab.c"
+#line 2065 "y.tab.c"
     break;
 
   case 60: /* proc_statement: func_statement  */
-#line 255 "part1.y"
+#line 254 "part1.y"
                                {(yyval.node)=(yyvsp[0].node);}
-#line 2072 "y.tab.c"
+#line 2071 "y.tab.c"
     break;
 
   case 61: /* proc_statement: proc_if_statement  */
-#line 256 "part1.y"
+#line 255 "part1.y"
                                   {(yyval.node)=(yyvsp[0].node);}
-#line 2078 "y.tab.c"
+#line 2077 "y.tab.c"
     break;
 
   case 62: /* proc_statement: proc_while_statement  */
-#line 257 "part1.y"
+#line 256 "part1.y"
                                      { (yyval.node) = (yyvsp[0].node);}
-#line 2084 "y.tab.c"
+#line 2083 "y.tab.c"
     break;
 
   case 63: /* proc_statement: proc_do_statement  */
-#line 258 "part1.y"
+#line 257 "part1.y"
                                   { (yyval.node) = (yyvsp[0].node);}
-#line 2090 "y.tab.c"
+#line 2089 "y.tab.c"
     break;
 
   case 64: /* proc_statement: block_proc  */
-#line 259 "part1.y"
+#line 258 "part1.y"
                            {(yyval.node) = (yyvsp[0].node);}
-#line 2096 "y.tab.c"
+#line 2095 "y.tab.c"
     break;
 
   case 65: /* proc_statement: proc_for_statement  */
-#line 260 "part1.y"
+#line 259 "part1.y"
                                    {(yyval.node) = (yyvsp[0].node);}
-#line 2102 "y.tab.c"
+#line 2101 "y.tab.c"
     break;
 
   case 66: /* statement: assignment ';'  */
-#line 262 "part1.y"
+#line 261 "part1.y"
                           {(yyval.node) = (yyvsp[-1].node);}
-#line 2108 "y.tab.c"
+#line 2107 "y.tab.c"
     break;
 
   case 67: /* statement: func_statement  */
-#line 263 "part1.y"
+#line 262 "part1.y"
                           {(yyval.node)=(yyvsp[0].node);}
-#line 2114 "y.tab.c"
+#line 2113 "y.tab.c"
     break;
 
   case 68: /* statement: if_statement  */
-#line 264 "part1.y"
+#line 263 "part1.y"
                         {(yyval.node)=(yyvsp[0].node);}
-#line 2120 "y.tab.c"
+#line 2119 "y.tab.c"
     break;
 
   case 69: /* statement: while_statement  */
-#line 265 "part1.y"
+#line 264 "part1.y"
                            { (yyval.node) = (yyvsp[0].node);}
-#line 2126 "y.tab.c"
+#line 2125 "y.tab.c"
     break;
 
   case 70: /* statement: do_statement  */
-#line 266 "part1.y"
+#line 265 "part1.y"
                         { (yyval.node) = (yyvsp[0].node);}
-#line 2132 "y.tab.c"
+#line 2131 "y.tab.c"
     break;
 
   case 71: /* statement: block  */
-#line 267 "part1.y"
+#line 266 "part1.y"
                  {(yyval.node) = (yyvsp[0].node);}
-#line 2138 "y.tab.c"
+#line 2137 "y.tab.c"
     break;
 
   case 72: /* statement: for_statement  */
-#line 268 "part1.y"
+#line 267 "part1.y"
                          {(yyval.node) = (yyvsp[0].node);}
-#line 2144 "y.tab.c"
+#line 2143 "y.tab.c"
     break;
 
   case 73: /* statement: return_statement  */
-#line 269 "part1.y"
+#line 268 "part1.y"
                             {(yyval.node) = (yyvsp[0].node);}
-#line 2150 "y.tab.c"
+#line 2149 "y.tab.c"
     break;
 
   case 74: /* func_statement: ID ASSIGN ID '(' func_arguments ')' ';'  */
-#line 271 "part1.y"
+#line 270 "part1.y"
                                                         { (yyval.node) = makeNode((yyvsp[-5].string),makeNode((yyvsp[-6].string),NULL,makeNode((yyvsp[-4].string),(yyvsp[-2].node),NULL)),NULL); }
-#line 2156 "y.tab.c"
+#line 2155 "y.tab.c"
     break;
 
   case 75: /* func_statement: ID '(' func_arguments ')'  */
-#line 272 "part1.y"
+#line 271 "part1.y"
                                           {(yyval.node) = makeNode("Call func",makeNode((yyvsp[-3].string),NULL,NULL),makeNode("ARGS",(yyvsp[-1].node),NULL));}
-#line 2162 "y.tab.c"
+#line 2161 "y.tab.c"
     break;
 
   case 76: /* func_statement: ID '(' func_arguments ')' ';'  */
-#line 273 "part1.y"
+#line 272 "part1.y"
                                               {(yyval.node) = makeNode("Call func",makeNode((yyvsp[-4].string),NULL,NULL),makeNode("ARGS",(yyvsp[-2].node),NULL));}
-#line 2168 "y.tab.c"
+#line 2167 "y.tab.c"
     break;
 
   case 77: /* func_statement: ID '(' func_arguments ')' ADD func_statement  */
-#line 274 "part1.y"
+#line 273 "part1.y"
                                                              {(yyval.node) = makeNode((yyvsp[-5].string),(yyvsp[-3].node),(yyvsp[0].node));}
-#line 2174 "y.tab.c"
+#line 2173 "y.tab.c"
     break;
 
   case 78: /* func_arguments: %empty  */
-#line 276 "part1.y"
+#line 275 "part1.y"
                 { (yyval.node) = NULL; }
-#line 2180 "y.tab.c"
+#line 2179 "y.tab.c"
     break;
 
   case 79: /* func_arguments: expression ',' func_arguments  */
-#line 277 "part1.y"
+#line 276 "part1.y"
                                               {(yyvsp[-2].node) -> right=(yyvsp[0].node);(yyval.node)=(yyvsp[-2].node);}
-#line 2186 "y.tab.c"
+#line 2185 "y.tab.c"
     break;
 
   case 80: /* func_arguments: expression  */
-#line 278 "part1.y"
+#line 277 "part1.y"
                           { (yyval.node) = (yyvsp[0].node); }
-#line 2192 "y.tab.c"
+#line 2191 "y.tab.c"
     break;
 
   case 81: /* assignment: ID ASSIGN expression  */
-#line 280 "part1.y"
+#line 279 "part1.y"
                                  { (yyval.node) = makeNode((yyvsp[-1].string),makeNode((yyvsp[-2].string),NULL, (yyvsp[0].node)), NULL);}
-#line 2198 "y.tab.c"
+#line 2197 "y.tab.c"
     break;
 
   case 82: /* assignment: ADDRESS ID ASSIGN expression  */
-#line 281 "part1.y"
+#line 280 "part1.y"
                                          { (yyval.node) = makeNode((yyvsp[-3].string),makeNode((yyvsp[-1].string),makeNode((yyvsp[-2].string),NULL, (yyvsp[0].node)), NULL), NULL);}
-#line 2204 "y.tab.c"
+#line 2203 "y.tab.c"
     break;
 
   case 83: /* assignment: ID ASSIGN STRING_VAL  */
-#line 282 "part1.y"
+#line 281 "part1.y"
                                  {(yyval.node) = makeNode((yyvsp[-1].string), makeNode((yyvsp[-2].string), makeNode((yyvsp[0].string),NULL, NULL), NULL), NULL);}
-#line 2210 "y.tab.c"
+#line 2209 "y.tab.c"
     break;
 
   case 84: /* assignment: ID '[' expression ']' ASSIGN STRING_VAL  */
-#line 283 "part1.y"
+#line 282 "part1.y"
                                                     {(yyval.node) = makeNode((yyvsp[-1].string), makeNode((yyvsp[-5].string), makeNode("[]",NULL,(yyvsp[-3].node)),NULL),makeNode((yyvsp[0].string),NULL,NULL));}
-#line 2216 "y.tab.c"
+#line 2215 "y.tab.c"
     break;
 
   case 85: /* assignment: ID ASSIGN ID '[' expression ']'  */
-#line 284 "part1.y"
+#line 283 "part1.y"
                                             {(yyval.node) = makeNode((yyvsp[-4].string), makeNode((yyvsp[-5].string),NULL,makeNode((yyvsp[-3].string),makeNode("[]",NULL,(yyvsp[-1].node)),NULL)),NULL);}
-#line 2222 "y.tab.c"
+#line 2221 "y.tab.c"
     break;
 
   case 86: /* assignment: ID '[' expression ']' ASSIGN CHAR_VAL  */
-#line 285 "part1.y"
+#line 284 "part1.y"
                                                   {(yyval.node) = makeNode((yyvsp[-1].string), makeNode((yyvsp[-5].string), makeNode("[]",NULL,(yyvsp[-3].node)),NULL),makeNode((yyvsp[0].string),NULL,NULL));}
-#line 2228 "y.tab.c"
+#line 2227 "y.tab.c"
     break;
 
   case 87: /* assignment: ID '[' expression ']' ASSIGN ID  */
-#line 286 "part1.y"
+#line 285 "part1.y"
                                             {(yyval.node) = makeNode((yyvsp[-1].string), makeNode((yyvsp[-5].string), makeNode("[]",NULL,(yyvsp[-3].node)),NULL),makeNode((yyvsp[0].string),NULL,NULL));}
-#line 2234 "y.tab.c"
+#line 2233 "y.tab.c"
     break;
 
   case 88: /* multi_assign: assignment  */
-#line 288 "part1.y"
+#line 287 "part1.y"
                          { (yyval.node) = (yyvsp[0].node); }
-#line 2240 "y.tab.c"
+#line 2239 "y.tab.c"
     break;
 
   case 89: /* multi_assign: assignment ',' multi_assign  */
-#line 289 "part1.y"
+#line 288 "part1.y"
                                           { (yyval.node) = makeNode("", (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2246 "y.tab.c"
+#line 2245 "y.tab.c"
     break;
 
   case 90: /* multi_assign: %empty  */
-#line 290 "part1.y"
+#line 289 "part1.y"
               { (yyval.node) = NULL; }
-#line 2252 "y.tab.c"
+#line 2251 "y.tab.c"
     break;
 
   case 91: /* if_statement: IF '(' expression ')' statement  */
-#line 292 "part1.y"
+#line 291 "part1.y"
                                               { (yyval.node) = makeNode("IF",(yyvsp[-2].node),(yyvsp[0].node));}
-#line 2258 "y.tab.c"
+#line 2257 "y.tab.c"
     break;
 
   case 92: /* if_statement: IF '(' expression ')' statement ELSE statement  */
-#line 293 "part1.y"
+#line 292 "part1.y"
                                                              { (yyval.node) = makeNode("IF-ELSE", makeNode("", (yyvsp[-4].node), makeNode("", (yyvsp[-2].node),(yyvsp[0].node))), NULL); }
-#line 2264 "y.tab.c"
+#line 2263 "y.tab.c"
     break;
 
   case 93: /* proc_if_statement: IF '(' expression ')' proc_statement  */
-#line 295 "part1.y"
+#line 294 "part1.y"
                                                         { (yyval.node) = makeNode("IF",(yyvsp[-2].node),(yyvsp[0].node));}
-#line 2270 "y.tab.c"
+#line 2269 "y.tab.c"
     break;
 
   case 94: /* proc_if_statement: IF '(' expression ')' proc_statement ELSE proc_statement  */
-#line 296 "part1.y"
+#line 295 "part1.y"
                                                                             { (yyval.node) = makeNode("IF-ELSE", makeNode("", (yyvsp[-4].node), makeNode("", (yyvsp[-2].node),(yyvsp[0].node))), NULL); }
-#line 2276 "y.tab.c"
+#line 2275 "y.tab.c"
     break;
 
   case 95: /* while_statement: WHILE '(' expression ')' statement  */
-#line 298 "part1.y"
+#line 297 "part1.y"
                                                     { (yyval.node) = makeNode((yyvsp[-4].string), (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2282 "y.tab.c"
+#line 2281 "y.tab.c"
     break;
 
   case 96: /* proc_while_statement: WHILE '(' expression ')' proc_statement  */
-#line 300 "part1.y"
+#line 299 "part1.y"
                                                               { (yyval.node) = makeNode((yyvsp[-4].string), (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2288 "y.tab.c"
+#line 2287 "y.tab.c"
     break;
 
   case 97: /* do_statement: DO block WHILE '(' expression ')' ';'  */
-#line 302 "part1.y"
+#line 301 "part1.y"
                                                     { (yyval.node) = makeNode((yyvsp[-6].string), makeNode("", (yyvsp[-5].node),NULL), makeNode((yyvsp[-4].string), (yyvsp[-2].node), NULL)); }
-#line 2294 "y.tab.c"
+#line 2293 "y.tab.c"
     break;
 
   case 98: /* proc_do_statement: DO block_proc WHILE '(' expression ')' ';'  */
-#line 304 "part1.y"
+#line 303 "part1.y"
                                                               { (yyval.node) = makeNode((yyvsp[-6].string), makeNode("", (yyvsp[-5].node),NULL), makeNode((yyvsp[-4].string), (yyvsp[-2].node), NULL)); }
-#line 2300 "y.tab.c"
+#line 2299 "y.tab.c"
     break;
 
   case 99: /* for_statement: FOR '(' assignment ';' expression ';' update ')' statement  */
-#line 306 "part1.y"
+#line 305 "part1.y"
                                                                           { (yyval.node) = makeNode((yyvsp[-8].string), makeNode("INITS", (yyvsp[-6].node), makeNode("EXPR", (yyvsp[-4].node), makeNode("UPDATE", (yyvsp[-2].node), (yyvsp[0].node)))), NULL); }
-#line 2306 "y.tab.c"
+#line 2305 "y.tab.c"
     break;
 
   case 100: /* proc_for_statement: FOR '(' assignment ';' expression ';' update ')' proc_statement  */
-#line 308 "part1.y"
+#line 307 "part1.y"
                                                                                     { (yyval.node) = makeNode((yyvsp[-8].string), makeNode("INITS", (yyvsp[-6].node), makeNode("EXPR", (yyvsp[-4].node), makeNode("UPDATE", (yyvsp[-2].node), (yyvsp[0].node)))), NULL); }
-#line 2312 "y.tab.c"
+#line 2311 "y.tab.c"
     break;
 
   case 101: /* block: '{' '}'  */
-#line 310 "part1.y"
+#line 309 "part1.y"
                {(yyval.node) = makeNode("BLOCK",NULL, NULL);}
-#line 2318 "y.tab.c"
+#line 2317 "y.tab.c"
     break;
 
   case 102: /* block: '{' declaration nested_statement return_statement '}'  */
-#line 311 "part1.y"
+#line 310 "part1.y"
                                                              { (yyval.node) = makeNode("BLOCK", makeNode("", (yyvsp[-3].node), (yyvsp[-2].node)),(yyvsp[-1].node)); }
-#line 2324 "y.tab.c"
+#line 2323 "y.tab.c"
     break;
 
   case 103: /* block: '{' declaration return_statement '}'  */
-#line 312 "part1.y"
+#line 311 "part1.y"
                                             { (yyval.node) = makeNode("BLOCK", (yyvsp[-2].node), (yyvsp[-1].node)); }
-#line 2330 "y.tab.c"
+#line 2329 "y.tab.c"
     break;
 
   case 104: /* block: '{' nested_statement return_statement '}'  */
-#line 313 "part1.y"
+#line 312 "part1.y"
                                                  { (yyval.node) = makeNode("BLOCK", (yyvsp[-2].node), (yyvsp[-1].node)); }
-#line 2336 "y.tab.c"
+#line 2335 "y.tab.c"
     break;
 
   case 105: /* block: '{' declaration proc_nested_statement '}'  */
-#line 314 "part1.y"
+#line 313 "part1.y"
                                                  { (yyval.node) = makeNode("BLOCK", makeNode("", (yyvsp[-2].node), (yyvsp[-1].node)),NULL);}
-#line 2342 "y.tab.c"
+#line 2341 "y.tab.c"
     break;
 
   case 106: /* block: '{' declaration '}'  */
-#line 315 "part1.y"
+#line 314 "part1.y"
                            {(yyval.node) = makeNode("BLOCK",(yyvsp[-1].node), NULL); }
-#line 2348 "y.tab.c"
+#line 2347 "y.tab.c"
     break;
 
   case 107: /* block: '{' proc_nested_statement '}'  */
-#line 316 "part1.y"
+#line 315 "part1.y"
                                      { (yyval.node) = makeNode("BLOCK", (yyvsp[-1].node) ,NULL); }
-#line 2354 "y.tab.c"
+#line 2353 "y.tab.c"
     break;
 
   case 108: /* block_proc: '{' '}'  */
-#line 318 "part1.y"
+#line 317 "part1.y"
                     {(yyval.node) = makeNode("BLOCK",NULL, NULL);}
-#line 2360 "y.tab.c"
+#line 2359 "y.tab.c"
     break;
 
   case 109: /* block_proc: '{' declaration proc_nested_statement '}'  */
-#line 319 "part1.y"
+#line 318 "part1.y"
                                                       { (yyval.node) = makeNode("BLOCK", makeNode("", (yyvsp[-2].node), (yyvsp[-1].node)),NULL);}
-#line 2366 "y.tab.c"
+#line 2365 "y.tab.c"
     break;
 
   case 110: /* block_proc: '{' declaration '}'  */
-#line 320 "part1.y"
+#line 319 "part1.y"
                                 {(yyval.node) = makeNode("BLOCK",(yyvsp[-1].node), NULL); }
-#line 2372 "y.tab.c"
+#line 2371 "y.tab.c"
     break;
 
   case 111: /* block_proc: '{' proc_nested_statement '}'  */
-#line 321 "part1.y"
+#line 320 "part1.y"
                                           { (yyval.node) = makeNode("BLOCK", (yyvsp[-1].node) ,NULL); }
-#line 2378 "y.tab.c"
+#line 2377 "y.tab.c"
     break;
 
   case 112: /* expression: element_of_expression  */
-#line 323 "part1.y"
+#line 322 "part1.y"
                                   {(yyval.node) = (yyvsp[0].node);}
-#line 2384 "y.tab.c"
+#line 2383 "y.tab.c"
     break;
 
   case 113: /* expression: '(' expression ')'  */
-#line 324 "part1.y"
+#line 323 "part1.y"
                                {(yyval.node) = makeNode("",(yyvsp[-1].node), NULL);}
-#line 2390 "y.tab.c"
+#line 2389 "y.tab.c"
     break;
 
   case 114: /* expression: expression EQ expression  */
-#line 325 "part1.y"
+#line 324 "part1.y"
                                          {(yyvsp[-2].node) -> right = (yyvsp[0].node); (yyval.node) = makeNode((yyvsp[-1].string), (yyvsp[-2].node) ,NULL);}
-#line 2396 "y.tab.c"
+#line 2395 "y.tab.c"
     break;
 
   case 115: /* expression: MUL '(' expression ')'  */
-#line 326 "part1.y"
+#line 325 "part1.y"
                                    {(yyval.node) = makeNode("*",(yyvsp[-1].node), NULL);}
-#line 2402 "y.tab.c"
+#line 2401 "y.tab.c"
     break;
 
   case 116: /* expression: expression AND expression  */
-#line 327 "part1.y"
+#line 326 "part1.y"
                                           {(yyvsp[-2].node) -> right = (yyvsp[0].node); (yyval.node) = makeNode((yyvsp[-1].string), (yyvsp[-2].node) ,NULL);}
-#line 2408 "y.tab.c"
+#line 2407 "y.tab.c"
     break;
 
   case 117: /* expression: expression OR expression  */
-#line 328 "part1.y"
+#line 327 "part1.y"
                                          {(yyvsp[-2].node) -> right = (yyvsp[0].node); (yyval.node) = makeNode((yyvsp[-1].string), (yyvsp[-2].node) ,NULL);}
-#line 2414 "y.tab.c"
+#line 2413 "y.tab.c"
     break;
 
   case 118: /* expression: expression GT expression  */
-#line 329 "part1.y"
+#line 328 "part1.y"
                                          {(yyvsp[-2].node) -> right = (yyvsp[0].node); (yyval.node) = makeNode((yyvsp[-1].string), (yyvsp[-2].node) ,NULL);}
-#line 2420 "y.tab.c"
+#line 2419 "y.tab.c"
     break;
 
   case 119: /* expression: expression GTE expression  */
-#line 330 "part1.y"
+#line 329 "part1.y"
                                           {(yyvsp[-2].node) -> right = (yyvsp[0].node); (yyval.node) = makeNode((yyvsp[-1].string), (yyvsp[-2].node) ,NULL);}
-#line 2426 "y.tab.c"
+#line 2425 "y.tab.c"
     break;
 
   case 120: /* expression: expression LTE expression  */
-#line 331 "part1.y"
+#line 330 "part1.y"
                                           {(yyvsp[-2].node) -> right = (yyvsp[0].node); (yyval.node) = makeNode((yyvsp[-1].string), (yyvsp[-2].node) ,NULL);}
-#line 2432 "y.tab.c"
+#line 2431 "y.tab.c"
     break;
 
   case 121: /* expression: expression LT expression  */
-#line 332 "part1.y"
+#line 331 "part1.y"
                                          {(yyvsp[-2].node) -> right = (yyvsp[0].node); (yyval.node) = makeNode((yyvsp[-1].string), (yyvsp[-2].node) ,NULL);}
-#line 2438 "y.tab.c"
+#line 2437 "y.tab.c"
     break;
 
   case 122: /* expression: expression NEQ expression  */
-#line 333 "part1.y"
+#line 332 "part1.y"
                                       {(yyvsp[-2].node) -> right = (yyvsp[0].node); (yyval.node) = makeNode((yyvsp[-1].string), (yyvsp[-2].node) ,NULL);}
-#line 2444 "y.tab.c"
+#line 2443 "y.tab.c"
     break;
 
   case 123: /* expression: expression ADD expression  */
-#line 334 "part1.y"
+#line 333 "part1.y"
                                       {(yyvsp[-2].node) -> right = (yyvsp[0].node); (yyval.node) = makeNode((yyvsp[-1].string), (yyvsp[-2].node) ,NULL);}
-#line 2450 "y.tab.c"
+#line 2449 "y.tab.c"
     break;
 
   case 124: /* expression: expression SUB expression  */
-#line 335 "part1.y"
+#line 334 "part1.y"
                                       {(yyvsp[-2].node) -> right = (yyvsp[0].node); (yyval.node) = makeNode((yyvsp[-1].string), (yyvsp[-2].node) ,NULL);}
-#line 2456 "y.tab.c"
+#line 2455 "y.tab.c"
     break;
 
   case 125: /* expression: expression MUL expression  */
-#line 336 "part1.y"
+#line 335 "part1.y"
                                       {(yyvsp[-2].node) -> right = (yyvsp[0].node); (yyval.node) = makeNode((yyvsp[-1].string), (yyvsp[-2].node) ,NULL);}
-#line 2462 "y.tab.c"
+#line 2461 "y.tab.c"
     break;
 
   case 126: /* expression: unary_op expression  */
-#line 337 "part1.y"
+#line 336 "part1.y"
                                             { (yyval.node) = makeNode((yyvsp[-1].string), (yyvsp[0].node), NULL); }
-#line 2468 "y.tab.c"
+#line 2467 "y.tab.c"
     break;
 
   case 127: /* expression: expression DIV expression  */
-#line 338 "part1.y"
+#line 337 "part1.y"
                                       {(yyvsp[-2].node) -> right = (yyvsp[0].node); (yyval.node) = makeNode((yyvsp[-1].string), (yyvsp[-2].node) ,NULL);}
-#line 2474 "y.tab.c"
+#line 2473 "y.tab.c"
     break;
 
   case 128: /* expression: address_of  */
-#line 339 "part1.y"
+#line 338 "part1.y"
                        { (yyval.node) = (yyvsp[0].node); }
-#line 2480 "y.tab.c"
+#line 2479 "y.tab.c"
     break;
 
   case 129: /* element_of_expression: primitive_value  */
-#line 341 "part1.y"
+#line 340 "part1.y"
                                        {(yyval.node) = makeNode((yyvsp[0].string),NULL, NULL); }
-#line 2486 "y.tab.c"
+#line 2485 "y.tab.c"
     break;
 
   case 130: /* element_of_expression: '|' ID '|'  */
-#line 342 "part1.y"
+#line 341 "part1.y"
                                     { (yyval.node) = makeNode("STR_LEN", makeNode((yyvsp[-1].string), NULL, NULL), NULL); }
-#line 2492 "y.tab.c"
+#line 2491 "y.tab.c"
     break;
 
   case 131: /* element_of_expression: func_statement  */
-#line 343 "part1.y"
+#line 342 "part1.y"
                                       { (yyval.node) = (yyvsp[0].node); }
-#line 2498 "y.tab.c"
+#line 2497 "y.tab.c"
     break;
 
   case 132: /* element_of_expression: ID  */
-#line 344 "part1.y"
+#line 343 "part1.y"
                           { (yyval.node) = makeNode((yyvsp[0].string),NULL, NULL); }
-#line 2504 "y.tab.c"
+#line 2503 "y.tab.c"
     break;
 
   case 133: /* primitive_value: CHAR_VAL  */
-#line 346 "part1.y"
+#line 345 "part1.y"
                           { (yyval.string) = (yyvsp[0].string); }
-#line 2510 "y.tab.c"
+#line 2509 "y.tab.c"
     break;
 
   case 134: /* primitive_value: HEX_INT  */
-#line 347 "part1.y"
+#line 346 "part1.y"
                           { (yyval.string) = (yyvsp[0].string); }
-#line 2516 "y.tab.c"
+#line 2515 "y.tab.c"
     break;
 
   case 135: /* primitive_value: DEC_INT  */
-#line 348 "part1.y"
+#line 347 "part1.y"
                           {(yyval.string) = (yyvsp[0].string); }
-#line 2522 "y.tab.c"
+#line 2521 "y.tab.c"
     break;
 
   case 136: /* primitive_value: REAL_VAL  */
-#line 349 "part1.y"
+#line 348 "part1.y"
                           { (yyval.string) = (yyvsp[0].string); }
-#line 2528 "y.tab.c"
+#line 2527 "y.tab.c"
     break;
 
   case 137: /* primitive_value: TRUE_VAL  */
-#line 350 "part1.y"
+#line 349 "part1.y"
                           { (yyval.string) = (yyvsp[0].string);}
-#line 2534 "y.tab.c"
+#line 2533 "y.tab.c"
     break;
 
   case 138: /* primitive_value: NULLP  */
-#line 351 "part1.y"
+#line 350 "part1.y"
                        { (yyval.string) = (yyvsp[0].string); }
-#line 2540 "y.tab.c"
+#line 2539 "y.tab.c"
     break;
 
   case 139: /* primitive_value: DER_ID  */
-#line 352 "part1.y"
+#line 351 "part1.y"
                         { (yyval.string) = (yyvsp[0].string); }
-#line 2546 "y.tab.c"
+#line 2545 "y.tab.c"
     break;
 
   case 140: /* primitive_value: FALSE_VAL  */
-#line 353 "part1.y"
+#line 352 "part1.y"
                            { (yyval.string) = (yyvsp[0].string);}
-#line 2552 "y.tab.c"
+#line 2551 "y.tab.c"
     break;
 
   case 141: /* address_of: ADDRESS ID  */
-#line 355 "part1.y"
+#line 354 "part1.y"
                        { (yyval.node) = makeNode((yyvsp[-1].string), makeNode((yyvsp[0].string), NULL, NULL), NULL); }
-#line 2558 "y.tab.c"
+#line 2557 "y.tab.c"
     break;
 
   case 142: /* address_of: ADDRESS ID '[' expression ']'  */
-#line 356 "part1.y"
+#line 355 "part1.y"
                                           { (yyval.node) = makeNode((yyvsp[-4].string), makeNode((yyvsp[-3].string), makeNode("[]", (yyvsp[-1].node), NULL), NULL), NULL); }
-#line 2564 "y.tab.c"
+#line 2563 "y.tab.c"
     break;
 
   case 143: /* return_statement: RETURN expression ';'  */
-#line 358 "part1.y"
+#line 357 "part1.y"
                                        { (yyval.node) = makeNode("RET", (yyvsp[-1].node), NULL); }
-#line 2570 "y.tab.c"
+#line 2569 "y.tab.c"
     break;
 
   case 144: /* return_statement: RETURN func_statement  */
-#line 359 "part1.y"
+#line 358 "part1.y"
                                         { (yyval.node) = makeNode("RET", (yyvsp[0].node), NULL); }
-#line 2576 "y.tab.c"
+#line 2575 "y.tab.c"
     break;
 
   case 145: /* update: ID ADD ADD  */
-#line 361 "part1.y"
+#line 360 "part1.y"
                    { (yyval.node) = makeNode("++", makeNode((yyvsp[-2].string), NULL, NULL), NULL); }
-#line 2582 "y.tab.c"
+#line 2581 "y.tab.c"
     break;
 
   case 146: /* update: ID SUB SUB  */
-#line 362 "part1.y"
+#line 361 "part1.y"
                    { (yyval.node) = makeNode("--", makeNode((yyvsp[-2].string), NULL, NULL), NULL); }
-#line 2588 "y.tab.c"
+#line 2587 "y.tab.c"
     break;
 
   case 147: /* update: multi_assign  */
-#line 363 "part1.y"
+#line 362 "part1.y"
                      { (yyval.node) = (yyvsp[0].node); }
-#line 2594 "y.tab.c"
+#line 2593 "y.tab.c"
     break;
 
   case 148: /* unary_op: ADD  */
-#line 365 "part1.y"
+#line 364 "part1.y"
               { (yyval.string) = (yyvsp[0].string); }
-#line 2600 "y.tab.c"
+#line 2599 "y.tab.c"
     break;
 
   case 149: /* unary_op: SUB  */
-#line 366 "part1.y"
+#line 365 "part1.y"
               { (yyval.string) = (yyvsp[0].string); }
-#line 2606 "y.tab.c"
+#line 2605 "y.tab.c"
     break;
 
   case 150: /* unary_op: NOT  */
-#line 367 "part1.y"
+#line 366 "part1.y"
               {(yyval.string) = (yyvsp[0].string);}
-#line 2612 "y.tab.c"
+#line 2611 "y.tab.c"
     break;
 
 
-#line 2616 "y.tab.c"
+#line 2615 "y.tab.c"
 
       default: break;
     }
@@ -2805,7 +2804,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 369 "part1.y"
+#line 368 "part1.y"
 
 #include "lex.yy.c"
 int main()
@@ -2823,7 +2822,7 @@ int main()
 Arguments * callfuncargs(code * CODEscope,node *tree,int * count)
 {
 	Arguments* arr = NULL ,ar[50];
-	char* type, *len;
+	char* type;
 	while(tree != NULL) {
 		ar[(*count)++].type = exprtype(tree -> left,CODEscope);
 		printf("390 %d %s, ",*count,tree -> left -> token);
@@ -2870,8 +2869,7 @@ char* findfunc(node * tree,code * CODEscope)
 		printf("but find func with some name but other args\n");
 		exit(1);
 }
-char *findvar(node * tree,code * CODEscope)
-{
+char *findvar(node * tree,code * CODEscope){
 	code*temp=CODEscope;
 	if(strcmp(tree -> token,"solovar") == 0)
 		tree=tree -> left;
@@ -2906,9 +2904,7 @@ char *findvar(node * tree,code * CODEscope)
 		}
 		temp = temp -> beforeLVL;
 	}
-	printf("ERORR,var %s not find in scope %s in func/proc %s\n ",tree -> token,CODEscope -> name,mycode -> func[mycode -> countfunc-1] -> name);
 	exit(1);
-	
 }
 char * exprtype(node * tree,code* CODEscope){
 	char* msg = (char*)malloc(sizeof(char)*7);
@@ -2957,7 +2953,6 @@ char * exprtype(node * tree,code* CODEscope){
 				exit(1);
 			}
 		}
-
 		if(strcmp(tree -> token, ">=") == 0 
 		|| strcmp(tree -> token, ">") == 0
 		|| strcmp(tree -> token, "<=") == 0
@@ -3069,70 +3064,62 @@ char * exprtype(node * tree,code* CODEscope){
 void push(code* from,char* name) {
 	code * point;
 	if(mycode == NULL)
-		mycode = mkcode(name);
+		mycode = makecode(name);
 	else {
 	point = mycode;
 	while(point -> nextLVL != NULL)
 		point=point -> nextLVL;
-	point -> nextLVL = mkcode(name);
+	point -> nextLVL = makecode(name);
 	point -> nextLVL -> beforeLVL = from;
 	}
 }
-code* mkcode(char* name) {	
+code* makecode(char* name) {	
 	code *newlvl = (code*)malloc(sizeof(code));
-	newlvl -> place=++scope;
-	newlvl -> name=name;
-	newlvl -> var=NULL;
-	newlvl -> countvar=0;
-	newlvl -> func=NULL;
-	newlvl -> countfunc=0;
-	newlvl -> nextLVL=NULL;
-	newlvl -> beforeLVL=NULL;
+	newlvl -> place = ++scope;
+	newlvl -> name = name;
+	newlvl -> var = NULL;
+	newlvl -> countvar = 0;
+	newlvl -> func = NULL;
+	newlvl -> countfunc = 0;
+	newlvl -> nextLVL = NULL;
+	newlvl -> beforeLVL = NULL;
 	return newlvl;
 }
 
-void addvar(Arguments * args,int countvars,int isArg,code * CODEscope){
+void addvar(Arguments * args, int countvars, int isArg, code * CODEscope){
 	if(countvars == 0)
-	return;
+		return;
 	Varaiable* temp;
-	code * codey=CODEscope;
-
-	for(int i=0;i<countvars;i++)
-		for(int j=0;j<countvars;j++)
-	if(i != j && strcmp(args[j].name,args[i].name) == 0 )
-	{
-		printf("sorry you can't some vars %s in one declear",args[i].name);
-		code * t=codey -> beforeLVL;
-		while(t -> beforeLVL != NULL && t -> beforeLVL -> countfunc == 0)
-			t=t -> beforeLVL;
-		if(t -> func != NULL)
-		printf(",in func %s\n",t -> func[t -> countfunc-1] -> name);
-			else
-		printf("\n");
-		exit(1);
-	}
-	if(codey -> var == NULL)
-	{ 
-		codey -> var=(Varaiable*) malloc(sizeof(Varaiable)*countvars);
-	}
-	else
-	{
-		temp=codey -> var;
-		codey -> var=(Varaiable*) malloc(sizeof(Varaiable)*(codey -> countvar+countvars));
-		for(int i=0;i<codey -> countvar;i++)
-		{
-			for(int j=0;j<countvars;j++)
-			{
-				if(strcmp(temp[i].name,args[j].name) == 0 )
-				{
-					printf("sorry you can't some var %s in some scope",temp[i].name);
-					code * t=codey -> beforeLVL;
-					while(t -> beforeLVL != NULL && t -> beforeLVL -> countfunc == 0)
-						t=t -> beforeLVL;
-					if(t -> func != NULL)
-					printf(",in func %s\n",t -> func[t -> countfunc-1] -> name);
-					else
+	code* codey = CODEscope;
+	for(int i = 0; i < countvars; i++)
+		for(int j = 0; j < countvars; j++)
+			if(i != j && strcmp(args[j].name, args[i].name) == 0 ) {
+				printf("sorry you can not have same named variables %s in one declaration\n", args[i].name);
+				code* t = codey -> beforeLVL;
+				while(t -> beforeLVL != NULL && t -> beforeLVL -> countfunc == 0)
+					t = t -> beforeLVL;
+				if(t -> func != NULL)
+					printf(",in func %s\n",t -> func[t -> countfunc - 1] -> name);
+				else
 					printf("\n");
+				exit(1);
+			}
+	if(codey -> var == NULL)
+		codey -> var=(Varaiable*) malloc(sizeof(Varaiable)*countvars);
+	else {
+		temp=codey -> var;
+		codey -> var=(Varaiable*) malloc(sizeof(Varaiable)*(codey -> countvar + countvars));
+		for(int i = 0; i < codey -> countvar; i++) {
+			for(int j = 0; j < countvars; j++) {
+				if(strcmp(temp[i].name,args[j].name) == 0 ) {
+					printf("sorry you can not have same named variables %s in the same scope",temp[i].name);
+					code* t = codey -> beforeLVL;
+					while(t -> beforeLVL != NULL && t -> beforeLVL -> countfunc == 0)
+						t = t -> beforeLVL;
+					if(t -> func != NULL)
+						printf(",in func %s\n", t -> func[t -> countfunc-1] -> name);
+					else
+						printf("\n");
 					exit(1);
 				}
 			}
@@ -3140,141 +3127,97 @@ void addvar(Arguments * args,int countvars,int isArg,code * CODEscope){
 		}
 	}
 	for(int j = 0; j < countvars; j++) {
-		codey -> var[codey -> countvar].name=args[j].name;
-		codey -> var[codey -> countvar].value=NULL;
-		codey -> var[codey -> countvar].isArg=isArg;
-		codey -> var[codey -> countvar].len=args[j].len;
-		codey -> var[(codey -> countvar)++].type=args[j].type;
+		codey -> var[codey -> countvar].name = args[j].name;
+		codey -> var[codey -> countvar].value = NULL;
+		codey -> var[codey -> countvar].isArg = isArg;
+		codey -> var[(codey -> countvar)++].type = args[j].type;
 	}
-	printf("L718 vars in scope %s \n",codey -> name);
+	printf("L718 vars in scope %s \n", codey -> name);
 	for(int i = 0; i < codey -> countvar; i++)
 		printf("%s %s,", codey -> var[i].name, codey -> var[i].type);
 	printf("\nend vars scope %d\n", codey -> place);
 }
-
-void addFunc(char * name,Arguments * args,node *returnType,int countArgs,code * CODEscope) {
+ 
+void addFunc(char* name, Arguments* args, node* returnType, int countArgs, code* CODEscope) {
 	Function** temp;
-	code * codey=CODEscope;
-	for(int i=0;i<countArgs;i++)
-		for(int j=0;j<countArgs;j++)
-			if(i != j && strcmp(args[j].name,args[i].name) == 0 ) {
-				printf("sorry you can't some Arguments %s in func %s\n",args[i].name,name);
+	code* codey = CODEscope;
+	for(int i = 0; i < countArgs; i++)
+		for(int j = 0; j < countArgs; j++)
+			if(i != j && strcmp(args[j].name, args[i].name) == 0 ) {
+				printf("Sorry you can't put several arguments %s in the same function %s\n", args[i].name, name);
 				exit(1);
 			}
 	if(codey -> func == NULL) 
 		codey -> func=(Function**) malloc(sizeof(Function*));
 	else {
 		temp=codey -> func;
-		codey -> func=(Function**) malloc(sizeof(Function*)*(codey -> countfunc+1));
-		for(int i=0;i<codey -> countfunc;i++) {
-			if(strcmp(temp[i] -> name,name) == 0 ) {
-				printf("sorry you can't some func %s in some scope \n",temp[i] -> name);
+		codey -> func = (Function**)malloc(sizeof(Function*) * (codey -> countfunc + 1));
+		for(int i = 0; i < codey -> countfunc; i++) {
+			if(strcmp(temp[i] -> name, name) == 0 ) {
+				printf("Sorry you can't put several arguments %s in the same scope \n",temp[i] -> name);
 				exit(1);
 			}
 			codey -> func[i]=temp[i];
 		}
 	}
-	codey -> func[codey -> countfunc]=(Function*) malloc(sizeof(Function));
+	codey -> func[codey -> countfunc] = (Function*)malloc(sizeof(Function));
 	codey -> func[codey -> countfunc] -> name=name;
 	codey -> func[codey -> countfunc] -> args=args;
 	if(returnType == NULL)
-		codey -> func[codey -> countfunc] -> returnType=NULL;
+		codey -> func[codey -> countfunc] -> returnType = NULL;
 	else {
-		if(strcmp(returnType -> token,"STRING") == 0) {
-			printf("ERORR,return type func %s cant be string\n",name);
+		if(strcmp(returnType -> token, "STRING") == 0) {
+			printf("ERORR, return type in function %s can not be a string \n", name);
 			exit(1);
 		}
-		codey -> func[codey -> countfunc] -> returnType=returnType -> token;
+		codey -> func[codey -> countfunc] -> returnType = returnType -> token;
 	}
 	codey -> func[codey -> countfunc] -> countArgs = countArgs;
 	codey -> func[codey -> countfunc] -> findreturn = false;
 	++(codey -> countfunc); 
 
 	printf("L772 start %s in scope %d\n", name, codey -> place);
-	for(int i=0;i<countArgs;i++)
-		printf("%s %s,", codey -> func[codey -> countfunc-1] -> args[i].name,codey -> func[codey -> countfunc-1] -> args[i].type);
+	for(int i = 0; i < countArgs; i++)
+		printf("%s %s,", codey -> func[codey -> countfunc-1] -> args[i].name, codey -> func[codey -> countfunc-1] -> args[i].type);
 	printf("end %s\n", name);
 }
 
-Arguments * mkArgs(node *tree, int *count){
-	Arguments  *arr = NULL;
+int typeFinder(char* token){
+	if(strcmp(token, "INT") == 0) return 0;
+	if(strcmp(token, "REAL") == 0) return 0;
+	if(strcmp(token, "BOOL") == 0) return 0;
+	if(strcmp(token, "STRING") == 0) return 0;
+	return 1;
+}
+
+Arguments* makeArgs(node *tree, int *count){
+	Arguments *arr = NULL;
 	Arguments ar[50];
 	char* type;
-	char* len;
-	printf("\033[0;31m"); //Set the text to the color red
-	printTree(tree,printlevel);
-	printf("\033[0m"); //Resets the text to default color
 	if(tree != NULL) {
-		node* temp = tree;
-		node* temp1 = tree;
-		printf("I am the token %s\n",temp1 -> token);
-		printf("------------------\n");
-		printf("I am the token left left %s\n",temp1 -> left -> left -> token);
-		printf("I am the token left right %s\n",temp1 -> left -> right -> token); 
-		printf("------------------\n");
-		printf("I am the token left left right %s\n",temp1 -> left -> left -> right -> token);
-		printf("I am the token left left right right %s\n",temp1 -> left -> left -> right -> right -> token);
-		printf("------------------\n");
-		printf("I am the token left right %s\n",temp1 -> left -> right -> token);
-		printf("I am the token left right left %s\n",temp1 -> left -> right -> left -> token);
-		printf("I am the token left right left right %s\n",temp1 -> left -> right -> left -> right -> token);
-		int ass = strcmp(temp -> token, "VAR");
-		type = temp -> left -> token;
-		temp1 = temp1 -> left;
-		do {
-			if(strcmp(temp -> token, "VAR") == 0) {
-				printf("I am the ASS: %d\n", ass);
-				temp = temp1 -> left;
-				temp1 = temp1 -> right;
-				if(strcmp(temp -> token, "(") == 0 || strcmp(temp -> token, "VAR") == 0) {
-					type = temp -> right -> token;
-					if(temp -> left -> left != NULL)
-						len = temp -> left -> left -> left -> token;
-					node * treee;
-					treee = temp -> left ;
-					do {
-						ar[*count].name = treee -> token;
-						ar[*count].type = type;
-						ar[*count].len = len;
-						(*count)++;
-						if(treee -> left == NULL)
-							treee = NULL;
-						else
-							treee = treee -> left -> left;
-					} while(treee != NULL);
-				}
-			}
-		} while(strcmp(temp1 -> token, "(") != 0 && strcmp(temp -> token, type) != 0);
-		temp = temp1;
-		if(strcmp(temp -> token, "(") == 0 || strcmp(temp -> token, "VAR") == 0) {
-			type = temp -> left -> token;
-			node * treee;
-			if(strcmp(temp -> token, "VAR") == 0)
-				treee = temp -> right;
-			else
-				treee=temp -> right -> left;
-			if(temp -> left -> left != NULL)
-				len=temp -> left -> left -> left -> token;
-			do{
-				ar[*count].name = treee -> token;
-				ar[*count].type = type;
-				ar[*count].len = len;
-				(*count)++;
-				if(treee -> left == NULL)
-					treee = NULL;
-				else
-					treee = treee -> left -> left;
-			} while(treee != NULL);
-		}
-		arr = (Arguments*)malloc(sizeof(Arguments) * (*count));
-		for(int i = 0; i < *count; i++) {
-			arr[i].name = ar[i].name;
-			arr[i].type = ar[i].type;
-			printf("%s %s,", arr[i].name, arr[i].type);
-		}
-		printf("\n");
-	}
-	return arr;
+		node* VarName = tree -> left -> left;
+		node* VarType = tree -> left;
+		type = VarType -> token;
+		if(typeFinder(VarName->token) == 0) {
+            do {
+                ar[*count].name = VarName -> token;
+                ar[*count].type = type;
+                (*count)++;
+                if(VarName -> right == NULL)
+                    VarName = NULL;
+                else
+                    VarName = VarName -> right;
+            } while(VarName != NULL);
+        }
+        arr = (Arguments*)malloc(sizeof(Arguments) * (*count));
+        for(int i = 0; i < *count; i++) {
+            arr[i].name = strdup(ar[i].name); // Copy the string to prevent pointing to temporary variables
+            arr[i].type = strdup(ar[i].type); // Copy the string to prevent pointing to temporary variables
+            printf("%s %s,", arr[i].name, arr[i].type);
+        }
+        printf("\n");
+    }
+    return arr;
 }
 
 node *makeNode(char *token, node *left, node *right) {
@@ -3316,10 +3259,10 @@ void printTabs(int numOfTabs) {
 }
 
 int yyerror(char *e) {
-	int yydebug = 1; 
+	int yydebug = 1;
 	fflush(stdout);
-	fprintf(stderr,"Error %s at line %d\n" , e, yylineno);
-	fprintf(stderr, "does not accept '%s'\n", yytext);
+	fprintf(stderr,"%s at line %d " , e, yylineno);
+	fprintf(stderr, "- invalid character '%s'\n", yytext);
 	return 0;
 }
 
@@ -3327,24 +3270,24 @@ code* lestcode(code * codey){
 	code * CODEscope=codey;
 	if(CODEscope != NULL)
 	while(CODEscope -> nextLVL != NULL)
-		CODEscope=CODEscope -> nextLVL;
+		CODEscope = CODEscope -> nextLVL;
 	return CODEscope;
 }
 
-void syntaxMKscope(node *tree,code * CODEscope){
+void syntaxMKscope(node* tree,code* CODEscope){
 	if(strcmp(tree -> token, "=") == 0 ) {
 		if(!(strcmp(exprtype(tree -> right,CODEscope),"NULL") == 0
 		&& (strcmp(exprtype(tree -> left,CODEscope),"REAL_PTR") == 0
 		||strcmp(exprtype(tree -> left,CODEscope),"INT_PTR") == 0
 		||strcmp(exprtype(tree -> left,CODEscope),"CHAR_PTR") == 0)))
 		if(strcmp(exprtype(tree -> left,CODEscope),exprtype(tree -> right,CODEscope)) != 0) {
-			printf("ERORR, you can't do = between %s and %s in scope %s in func/proc %s\n",exprtype(tree -> left,CODEscope),exprtype(tree -> right,CODEscope),CODEscope -> name,mycode -> func[mycode -> countfunc-1] -> name);
+			printf("ERORR: %s = %s can not be evaluated in scope %s in the fuction %s\n",exprtype(tree -> left,CODEscope),exprtype(tree -> right,CODEscope),CODEscope -> name,mycode -> func[mycode -> countfunc-1] -> name);
 			exit(1);
 		}
 	}
 	else if(strcmp(tree -> token, "VAR") == 0) {
 		int countvar = 0;
-		Arguments *var = mkArgs(tree, &countvar);
+		Arguments *var = makeArgs(tree, &countvar);
 		addvar(var, countvar, 0, CODEscope);
 	}
 	else if(strcmp(tree -> token, "IF") == 0) {
@@ -3365,7 +3308,7 @@ void syntaxMKscope(node *tree,code * CODEscope){
 	}
 	else if(strcmp(tree -> token, "while") == 0) {
 		if(strcmp(exprtype(tree -> left -> left,CODEscope),"BOOL") != 0) {
-			printf("ERORR, in while expr most be type boolean\n");
+			printf("ERROR:For expression must evaluate to boolean\n");
 			exit(1);
 		}
 		if(strcmp(tree -> right -> token,"{") != 0) {
@@ -3380,7 +3323,7 @@ void syntaxMKscope(node *tree,code * CODEscope){
 	}
 	else if(strcmp(tree -> token, "for") == 0) {
 	    if(strcmp(exprtype(tree -> left -> left -> right,CODEscope),"BOOL") != 0) {
-			printf("ERORR, in for expr most be type boolean\n");
+			printf("ERROR:For expression must evaluate to boolean\n");
 			exit(1);
 		}
 		syntaxMKscope(tree -> left -> left -> left,CODEscope);
@@ -3394,26 +3337,26 @@ void syntaxMKscope(node *tree,code * CODEscope){
 		}
 	}
 	else if(strcmp(tree -> token, "FUNCTION") == 0 ) {
-        int count=0;
-		Arguments * arg = mkArgs(tree -> left -> right->left, &count);
-		addFunc(tree -> left -> token, arg, tree -> left -> right -> right -> left, count, CODEscope);
-		push(CODEscope,tree -> token);
-		addvar(arg,count,1,lestcode(CODEscope));
-		if (tree -> left) syntaxMKscope(tree -> left,lestcode( CODEscope -> nextLVL));
-		if (tree -> right) syntaxMKscope(tree -> right,lestcode( CODEscope -> nextLVL));
+        int count = 0;
+		Arguments* arg = makeArgs(tree -> left -> right -> left, &count);
+		addFunc(tree -> left -> token, arg, tree -> left -> right -> right, count, CODEscope);
+		push(CODEscope, tree -> token);
+		addvar(arg, count, 1, lestcode(CODEscope));
+		if (tree -> left) syntaxMKscope(tree -> left, lestcode( CODEscope -> nextLVL));
+		if (tree -> right) syntaxMKscope(tree -> right, lestcode( CODEscope -> nextLVL));
 		if(CODEscope -> func[CODEscope -> countfunc-1] -> findreturn == false) {
-			printf("ERORR,in func %s not find return\n",tree -> left -> token);
+			printf("ERROR:At function %s - did not find return!\n", tree -> left -> token);
 			exit(1);
 		}
         scope--;		
 		return;
 	}
     else if(strcmp(tree -> token, "PROC") == 0) {
-        int count=0;
-		Arguments * arg=mkArgs(tree -> right -> left,&count);
-		addFunc(tree -> left -> token,arg,NULL,count,CODEscope);
+        int count = 0;
+		Arguments* arg = makeArgs(tree -> left -> right -> left, &count);
+		addFunc(tree -> left -> token, arg, NULL, count, CODEscope);
 		push(CODEscope,tree -> token);
-		addvar(arg,count,1,lestcode(CODEscope));
+		addvar(arg, count, 1, lestcode(CODEscope));
 		if (tree -> left) 
 			syntaxMKscope(tree -> left,lestcode( CODEscope -> nextLVL));
 		if (tree -> right)
@@ -3438,11 +3381,11 @@ void syntaxMKscope(node *tree,code * CODEscope){
 	else if(strcmp(tree -> token, "ARGS") == 0) { }
     else if(strcmp(tree -> token, "Main") == 0) {
 		if(flagMain == true) {
-			printf("Main needs to be one anad only and not inside a func/proc\n");
+			printf("ERROR:Main can not be inside a function/procedure\n");
 			exit(1);
 		}
-		flagMain=true;
-		addFunc(tree -> token,NULL,NULL,0,CODEscope);
+		flagMain = true;
+		addFunc(tree -> token, NULL, NULL, 0, CODEscope);
 		push(CODEscope,tree -> token);
 		if (tree -> left) 
 			syntaxMKscope(tree -> left,lestcode( CODEscope -> nextLVL));
@@ -3454,7 +3397,7 @@ void syntaxMKscope(node *tree,code * CODEscope){
     }       
 	else if(strcmp(tree -> token, "IF-ELSE") == 0) {
 		if(strcmp(exprtype(tree -> left -> left,CODEscope),"BOOL") != 0) {
-			printf("ERORR, in if expr most be type boolean\n");
+			printf("ERROR:If statement must evaluate to boolean\n");
 			exit(1);
 		}
 		if(strcmp(tree -> right -> left -> token,"{") != 0) {
@@ -3468,33 +3411,32 @@ void syntaxMKscope(node *tree,code * CODEscope){
 		}	
 	}
 	else if(strcmp(tree -> token, "RET") == 0) {
-		code * temp= CODEscope;
-		int flag=true;
-		while(strcmp(temp -> name,"FUNCTION") != 0&&strcmp(temp -> name,"PROC") != 0&&strcmp(temp -> name,"CODE") != 0) {
-			temp=temp -> beforeLVL;
-			flag=false;
+		code* temp = CODEscope;
+		int flag = true;
+		while(strcmp(temp -> name,"FUNCTION") != 0 && strcmp(temp -> name, "PROC") != 0 && strcmp(temp -> name,"CODE") != 0) {
+			temp = temp -> beforeLVL;
+			flag = false;
 		}
 		if(flag == false) {
-			if(strcmp(exprtype(tree -> left,CODEscope),temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> returnType))
-			{
-			printf("ERORR,return no some type in func %s \n",temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
+			if(strcmp(exprtype(tree -> left,CODEscope),temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> returnType)) {
+			printf("ERROR:At function %s - function type and return type do not match.\n",temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
 			printf("%s ,%s %s\n",exprtype(tree -> left,CODEscope),temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> returnType,temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
 			exit(1);
 			}
 		}
 		else{
-			if(temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> returnType != NULL) {
+			if(temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc - 1] -> returnType != NULL) {
 				if(0 == strcmp(exprtype(tree -> left,CODEscope),temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> returnType)){
-					temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> findreturn=true;
+					temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc - 1] -> findreturn = true;
 				}
 				else {
-					printf("ERORR,return no some type in func %s \n",temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
+					printf("ERROR:At procedure %s - can't have a return.\n",temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
 					printf("%s ,%s %s\n",exprtype(tree -> left,CODEscope),temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> returnType,temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
 					exit(1);
 				}
 			}
 			else {
-				printf("ERORR,return cant be in proc %s\n",temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
+				printf("ERROR:At procedure %s - can't have a return.\n",temp -> beforeLVL -> func[temp -> beforeLVL -> countfunc-1] -> name);
 				exit(1);
 			}  
 		}  
