@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "y.tab.h"
 %}
 %x COMMENT
@@ -69,10 +70,8 @@ false 	     		        { yylval.string = strdup(yytext); return FALSE_VAL; };
 ":"         {yylval.string = strdup(":"); return ':'; };
 
     /* Comments */
-"/*"            { BEGIN(COMMENT); }
-<COMMENT>"*/"   { BEGIN(INITIAL); }
-<COMMENT>\n     { }
-<COMMENT>.      { }
+"/*"([^*]|(\*+[^*/]))*"*/"   /* Ignore multiline comments */
+"//".*                      /* Ignore single-line comments */
 
     /* Misc */
 " " ;

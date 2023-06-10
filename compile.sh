@@ -1,2 +1,2 @@
 #!/bin/bash
-lex part1.l && yacc part1.y -d && cc -o part1 y.tab.c -ll -Ly && ./part1<part1.txt
+lex part2.l && yacc part2.y -d && cc -o part2 y.tab.c -ll -Ly && ./part2<part2.txt

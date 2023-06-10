@@ -1,9 +1,0 @@
-function foo(arg-> x, y, z: int; arg-> f, g: real): char{
-    var a: char;
-    a = 'A';
-    return a;
-}
-
-function main():void{
-    
-}

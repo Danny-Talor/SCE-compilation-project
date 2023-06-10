@@ -1,0 +1,28 @@
+function foo(arg-> x, y, z: int; arg-> f, g: real): char{
+    var a: char;
+    a = 'n';
+    if(x == 20){
+        y = 10;
+    }
+    z = x + y;
+    var b: char;
+    b = 'x';
+    return a;
+}
+
+function goo(arg-> x:int): void{
+    if(x>2){
+        x = x - 1;
+    }
+}
+
+
+function boo(arg-> x:int): void{
+    if(x>2){
+        x = x - 1;
+    }
+}
+
+function main():void{
+    foo();   
+}
